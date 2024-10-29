@@ -17,6 +17,7 @@ import (
 
 func TestBallotProof(t *testing.T) {
 	var (
+		// ballot inputs
 		fields = []*big.Int{
 			big.NewInt(3),
 			big.NewInt(5),
@@ -24,18 +25,22 @@ func TestBallotProof(t *testing.T) {
 			big.NewInt(4),
 			big.NewInt(1),
 		}
-		n_fields     = 16
-		maxCount     = 5
-		maxValue     = 16 + 1
-		minValue     = 0
-		costExp      = 2
+		n_fields        = 8
+		maxCount        = 5
+		maxValue        = 16 + 1
+		minValue        = 0
+		costExp         = 2
+		forceUniqueness = 1
+		weight          = 0
+		costFromWeight  = 0
+		// nullifier inputs
 		address, _   = hex.DecodeString("0x6Db989fbe7b1308cc59A27f021e2E3de9422CF0A")
 		processID, _ = hex.DecodeString("0xf16236a51F11c0Bf97180eB16694e3A345E42506")
 		secret, _    = hex.DecodeString("super-secret-mnemonic-phrase")
 		// circuit assets
-		wasmFile = "../circuits/artifacts/ballot_proof_test.wasm"
-		zkeyFile = "../circuits/artifacts/ballot_proof_test_pkey.zkey"
-		vkeyFile = "../circuits/artifacts/ballot_proof_test_vkey.json"
+		wasmFile = "../artifacts/ballot_proof_test.wasm"
+		zkeyFile = "../artifacts/ballot_proof_test_pkey.zkey"
+		vkeyFile = "../artifacts/ballot_proof_test_vkey.json"
 	)
 	// encrypt ballot
 	_, pubKey := utils.GenerateKeyPair()
@@ -81,14 +86,14 @@ func TestBallotProof(t *testing.T) {
 	inputs := map[string]any{
 		"fields":           utils.BigIntArrayToStringArray(fields, n_fields),
 		"max_count":        fmt.Sprint(maxCount),
-		"force_uniqueness": "0",
+		"force_uniqueness": fmt.Sprint(forceUniqueness),
 		"max_value":        fmt.Sprint(maxValue),
 		"min_value":        fmt.Sprint(minValue),
 		"cost_exp":         fmt.Sprint(costExp),
 		"max_total_cost":   fmt.Sprint(int(math.Pow(float64(maxValue-1), float64(costExp))) * maxCount), // (maxValue-1)^costExp * maxCount
 		"min_total_cost":   fmt.Sprint(maxCount),
-		"cost_from_weight": "0",
-		"weight":           "1",
+		"cost_from_weight": fmt.Sprint(costFromWeight),
+		"weight":           fmt.Sprint(weight),
 		"pk":               []string{pubKey.X.String(), pubKey.Y.String()},
 		"k":                k.String(),
 		"cipherfields":     cipherfields,
@@ -103,6 +108,8 @@ func TestBallotProof(t *testing.T) {
 		t.Errorf("Error compiling and generating proof: %v\n", err)
 		return
 	}
+	t.Log("Proof:", proofData)
+	t.Log("Public signals:", pubSignals)
 	// read zkey file
 	vkey, err := os.ReadFile(vkeyFile)
 	if err != nil {

@@ -1,7 +1,7 @@
 pragma circom 2.1.0;
 
+include "comparators.circom";
 include "./lib/elgamal.circom";
-include "./node_modules/circomlib/circuits/comparators.circom";
 
 template FieldComparator() {
     signal input expected[2][2];

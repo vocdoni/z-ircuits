@@ -1,9 +1,9 @@
 pragma circom 2.1.0;
 
+include "bitify.circom";
+include "comparators.circom";
 include "./lib/math.circom";
 include "./lib/utils.circom";
-include "../node_modules/circomlib/circuits/bitify.circom";
-include "../node_modules/circomlib/circuits/comparators.circom";
 
 template BallotChecker(n_fields) {
     signal input fields[n_fields];

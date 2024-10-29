@@ -13,9 +13,9 @@ import (
 func TestBallotCipher(t *testing.T) {
 	var (
 		// circuit assets
-		wasmFile = "../circuits/artifacts/ballot_cipher_test.wasm"
-		zkeyFile = "../circuits/artifacts/ballot_cipher_test_pkey.zkey"
-		vkeyFile = "../circuits/artifacts/ballot_cipher_test_vkey.json"
+		wasmFile = "../artifacts/ballot_cipher_test.wasm"
+		zkeyFile = "../artifacts/ballot_cipher_test_pkey.zkey"
+		vkeyFile = "../artifacts/ballot_cipher_test_vkey.json"
 	)
 
 	// encrypt ballot

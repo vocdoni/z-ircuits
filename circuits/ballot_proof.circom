@@ -1,8 +1,8 @@
 pragma circom 2.1.0;
 
+include "poseidon.circom";
 include "./ballot_checker.circom";
 include "./ballot_cipher.circom";
-include "./node_modules/circomlib/circuits/poseidon.circom";
 
 // BallotProof is the circuit to prove a valid vote in the Vocdoni scheme. The 
 // vote is valid if it meets the Ballot Protocol requirements, but also if the

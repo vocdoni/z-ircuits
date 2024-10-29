@@ -1,10 +1,10 @@
 pragma circom 2.1.0;
 
-include "../node_modules/circomlib/circuits/bitify.circom";
-include "../node_modules/circomlib/circuits/babyjub.circom";
-include "../node_modules/circomlib/circuits/comparators.circom";
-include "../node_modules/circomlib/circuits/escalarmulany.circom";
-include "../node_modules/circomlib/circuits/escalarmulfix.circom";
+include "bitify.circom";
+include "babyjub.circom";
+include "comparators.circom";
+include "escalarmulany.circom";
+include "escalarmulfix.circom";
 
 template ElGamal() {
     signal input pk[2]; // [pub] public key
