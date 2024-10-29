@@ -2,13 +2,13 @@
     "compilerOptions": {
         "target": "ESNext",
         /* Modules */
-        "module": "commonjs",
-        "moduleResolution": "node",
+        "module": "nodenext",
+        "moduleResolution": "nodenext",
         "esModuleInterop": true,
         "outDir": "./dist",
         /* Type Checking */
         "strict": true,
         "skipLibCheck": true
     },
-    "include": ["src/**/*"]
+    "include": ["./**/*.ts"]
 }
