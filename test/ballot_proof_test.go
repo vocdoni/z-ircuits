@@ -1,8 +1,8 @@
 package test
 
 import (
-	"encoding/hex"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"math"
@@ -12,10 +12,33 @@ import (
 
 	"github.com/iden3/go-iden3-crypto/poseidon"
 	"github.com/vocdoni/z-ircuits/utils"
+	"go.vocdoni.io/dvote/crypto/ethereum"
 	"go.vocdoni.io/dvote/util"
 )
 
+var (
+	testID  string
+	persist bool
+)
+
+func init() {
+	flag.StringVar(&testID, "testID", "", "Test ID")
+	flag.BoolVar(&persist, "persist", false, "Persist the test data")
+}
+
 func TestBallotProof(t *testing.T) {
+	flag.Parse()
+
+	if persist && testID == "" {
+		t.Error("Test ID is required when persisting")
+		return
+	}
+
+	acc := ethereum.NewSignKeys()
+	if err := acc.Generate(); err != nil {
+		t.Error(err)
+		return
+	}
 	var (
 		// ballot inputs
 		fields = []*big.Int{
@@ -34,9 +57,9 @@ func TestBallotProof(t *testing.T) {
 		weight          = 0
 		costFromWeight  = 0
 		// nullifier inputs
-		address, _   = hex.DecodeString("0x6Db989fbe7b1308cc59A27f021e2E3de9422CF0A")
-		processID, _ = hex.DecodeString("0xf16236a51F11c0Bf97180eB16694e3A345E42506")
-		secret, _    = hex.DecodeString("super-secret-mnemonic-phrase")
+		address   = acc.Address().Bytes()
+		processID = util.RandomBytes(20)
+		secret    = util.RandomBytes(16)
 		// circuit assets
 		wasmFile = "../artifacts/ballot_proof_test.wasm"
 		zkeyFile = "../artifacts/ballot_proof_test_pkey.zkey"
@@ -121,4 +144,14 @@ func TestBallotProof(t *testing.T) {
 		return
 	}
 	log.Println("Proof verified")
+	if persist {
+		if err := os.WriteFile(fmt.Sprintf("./%s_proof.json", testID), []byte(proofData), 0644); err != nil {
+			t.Errorf("Error writing proof file: %v\n", err)
+			return
+		}
+		if err := os.WriteFile(fmt.Sprintf("./%s_pub_signals.json", testID), []byte(pubSignals), 0644); err != nil {
+			t.Errorf("Error writing public signals file: %v\n", err)
+			return
+		}
+	}
 }

@@ -14,12 +14,17 @@ require (
 )
 
 require (
+	github.com/btcsuite/btcd/btcec/v2 v2.3.3 // indirect
 	github.com/dchest/blake512 v1.0.0 // indirect
+	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.3.0 // indirect
 	github.com/ethereum/go-ethereum v1.14.7 // indirect
 	github.com/glendc/go-external-ip v0.1.0 // indirect
+	github.com/holiman/uint256 v1.3.1 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.7 // indirect
 	github.com/wasmerio/wasmer-go v1.0.4 // indirect
+	go.vocdoni.io/proto v1.15.10-0.20240903073233-86144b1e2165 // indirect
 	golang.org/x/crypto v0.26.0 // indirect
 	golang.org/x/sys v0.23.0 // indirect
+	google.golang.org/protobuf v1.34.2 // indirect
 	lukechampine.com/blake3 v1.3.0 // indirect
 )
