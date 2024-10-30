@@ -2,8 +2,39 @@
 
 This repository includes the templates that compose the zk-snark circuit that allows to prove a valid vote, including the format of the vote itself and its encryption:
  * **Ballot checker** ([`ballot_checker.circom`](./circuits/ballot_checker.circom)): Checks that the ballot is valid under the params provided as inputs.
+    ```
+    template instances: 17
+    non-linear constraints: 6409
+    linear constraints: 0
+    public inputs: 0
+    private inputs: 14
+    public outputs: 5
+    wires: 6384
+    labels: 7298
+    ```
  * **Ballot cipher** ([`ballot_cipher.circom`](./circuits/ballot_cipher.circom)): Encrypts the ballot fields using ElGamal and checks if they match with the provided ones.
+    ```
+    template instances: 26
+    non-linear constraints: 3202
+    linear constraints: 0
+    public inputs: 8
+    private inputs: 0
+    public outputs: 0
+    wires: 3207
+    labels: 19411
+    ```
  * **Ballot proof** ([`ballot_proof.circom`](./circuits/ballot_proof.circom)): Checks the ballot and its encryption, and calculates the nullifier with the inputs provided proving that it matches with the provided one.
+    ```
+    template instances: 111
+    non-linear constraints: 35795
+    linear constraints: 0
+    public inputs: 42
+    private inputs: 13
+    public outputs: 0
+    wires: 35744
+    labels: 167345
+    ```
+    <small>For `n_fields = 8`.</small>
 
 ## Circuit compilation for testing 
 
