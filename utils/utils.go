@@ -6,16 +6,25 @@ import (
 	"math/big"
 
 	"github.com/iden3/go-iden3-crypto/babyjub"
+	"github.com/iden3/go-iden3-crypto/poseidon"
 )
 
-func BigIntArrayToStringArray(arr []*big.Int, n int) []string {
-	strArr := make([]string, n)
+func BigIntArrayToN(arr []*big.Int, n int) []*big.Int {
+	bigArr := make([]*big.Int, n)
 	for i := 0; i < n; i++ {
 		if i < len(arr) {
-			strArr[i] = arr[i].String()
+			bigArr[i] = arr[i]
 		} else {
-			strArr[i] = "0"
+			bigArr[i] = big.NewInt(0)
 		}
+	}
+	return bigArr
+}
+
+func BigIntArrayToStringArray(arr []*big.Int, n int) []string {
+	strArr := []string{}
+	for _, b := range BigIntArrayToN(arr, n) {
+		strArr = append(strArr, b.String())
 	}
 	return strArr
 }
@@ -31,4 +40,36 @@ func RandomK() (*big.Int, error) {
 	k := new(big.Int).SetBytes(kBytes)
 	k.Mod(k, babyjub.SubOrder)
 	return k, nil
+}
+
+func MultiPoseidon(inputs ...*big.Int) (*big.Int, error) {
+	if len(inputs) > 256 {
+		return nil, fmt.Errorf("too many inputs")
+	} else if len(inputs) == 0 {
+		return nil, fmt.Errorf("no inputs provided")
+	}
+	// calculate chunk hashes
+	hashes := []*big.Int{}
+	chunk := []*big.Int{}
+	for _, input := range inputs {
+		if len(chunk) == 16 {
+			hash, err := poseidon.Hash(chunk)
+			if err != nil {
+				return nil, err
+			}
+			hashes = append(hashes, hash)
+			chunk = []*big.Int{}
+		}
+		chunk = append(chunk, input)
+	}
+	// if the final chunk is not empty, hash it to get the last chunk hash
+	if len(chunk) > 0 {
+		hash, err := poseidon.Hash(chunk)
+		if err != nil {
+			return nil, err
+		}
+		hashes = append(hashes, hash)
+	}
+	// return the hash of all chunk hashes
+	return poseidon.Hash(hashes)
 }

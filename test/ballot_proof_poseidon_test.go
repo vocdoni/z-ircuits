@@ -16,11 +16,12 @@ import (
 	"go.vocdoni.io/dvote/util"
 )
 
-func TestBallotProof(t *testing.T) {
+func TestBallotProofPoseidon(t *testing.T) {
 	var (
 		testID  string
 		persist bool
 	)
+	
 	flag.StringVar(&testID, "testID", "", "Test ID")
 	flag.BoolVar(&persist, "persist", false, "Persist the test data")
 	flag.Parse()
@@ -46,20 +47,20 @@ func TestBallotProof(t *testing.T) {
 		}
 		n_fields        = 8
 		maxCount        = 5
+		forceUniqueness = 1
 		maxValue        = 16 + 1
 		minValue        = 0
 		costExp         = 2
-		forceUniqueness = 1
-		weight          = 0
 		costFromWeight  = 0
+		weight          = 0
 		// nullifier inputs
 		address   = acc.Address().Bytes()
 		processID = util.RandomBytes(20)
 		secret    = util.RandomBytes(16)
 		// circuit assets
-		wasmFile = "../artifacts/ballot_proof_test.wasm"
-		zkeyFile = "../artifacts/ballot_proof_test_pkey.zkey"
-		vkeyFile = "../artifacts/ballot_proof_test_vkey.json"
+		wasmFile = "../artifacts/ballot_proof_poseidon_test.wasm"
+		zkeyFile = "../artifacts/ballot_proof_poseidon_test_pkey.zkey"
+		vkeyFile = "../artifacts/ballot_proof_poseidon_test_vkey.json"
 	)
 	// encrypt ballot
 	_, pubKey := utils.GenerateKeyPair()
@@ -69,6 +70,7 @@ func TestBallotProof(t *testing.T) {
 		return
 	}
 	cipherfields := make([][][]string, n_fields)
+	plainCipherfields := []*big.Int{}
 	for i := 0; i < n_fields; i++ {
 		if i < len(fields) {
 			c1, c2 := utils.Encrypt(fields[i], pubKey, k)
@@ -76,11 +78,13 @@ func TestBallotProof(t *testing.T) {
 				{c1.X.String(), c1.Y.String()},
 				{c2.X.String(), c2.Y.String()},
 			}
+			plainCipherfields = append(plainCipherfields, c1.X, c1.Y, c2.X, c2.Y)
 		} else {
 			cipherfields[i] = [][]string{
 				{"0", "0"},
 				{"0", "0"},
 			}
+			plainCipherfields = append(plainCipherfields, big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
 		}
 	}
 	// generate the nullifier
@@ -101,6 +105,30 @@ func TestBallotProof(t *testing.T) {
 		log.Fatalf("Error hashing: %v\n", err)
 		return
 	}
+	bigInputs := []*big.Int{
+		big.NewInt(int64(maxCount)),
+		big.NewInt(int64(forceUniqueness)),
+		big.NewInt(int64(maxValue)),
+		big.NewInt(int64(minValue)),
+		big.NewInt(int64(math.Pow(float64(maxValue-1), float64(costExp))) * int64(maxCount)),
+		big.NewInt(int64(maxCount)),
+		big.NewInt(int64(costExp)),
+		big.NewInt(int64(costFromWeight)),
+		big.NewInt(int64(weight)),
+		pubKey.X,
+		pubKey.Y,
+		k,
+		nullifier,
+		commitment,
+		util.BigToFF(new(big.Int).SetBytes(secret)),
+	}
+	bigInputs = append(bigInputs, utils.BigIntArrayToN(fields, n_fields)...)
+	bigInputs = append(bigInputs, plainCipherfields...)
+	inputsHash, err := utils.MultiPoseidon(bigInputs...)
+	if err != nil {
+		log.Fatalf("Error hashing: %v\n", err)
+		return
+	}
 	// circuit inputs
 	inputs := map[string]any{
 		"fields":           utils.BigIntArrayToStringArray(fields, n_fields),
@@ -108,9 +136,9 @@ func TestBallotProof(t *testing.T) {
 		"force_uniqueness": fmt.Sprint(forceUniqueness),
 		"max_value":        fmt.Sprint(maxValue),
 		"min_value":        fmt.Sprint(minValue),
-		"cost_exp":         fmt.Sprint(costExp),
 		"max_total_cost":   fmt.Sprint(int(math.Pow(float64(maxValue-1), float64(costExp))) * maxCount), // (maxValue-1)^costExp * maxCount
 		"min_total_cost":   fmt.Sprint(maxCount),
+		"cost_exp":         fmt.Sprint(costExp),
 		"cost_from_weight": fmt.Sprint(costFromWeight),
 		"weight":           fmt.Sprint(weight),
 		"pk":               []string{pubKey.X.String(), pubKey.Y.String()},
@@ -119,6 +147,7 @@ func TestBallotProof(t *testing.T) {
 		"nullifier":        nullifier.String(),
 		"commitment":       commitment.String(),
 		"secret":           util.BigToFF(new(big.Int).SetBytes(secret)).String(),
+		"inputs_hash":      inputsHash.String(),
 	}
 	bInputs, _ := json.MarshalIndent(inputs, "  ", "  ")
 	t.Log("Inputs:", string(bInputs))

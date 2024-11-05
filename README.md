@@ -35,6 +35,30 @@ This repository includes the templates that compose the zk-snark circuit that al
     labels: 167345
     ```
     <small>For `n_fields = 8`.</small>
+ * **Ballot proof** ([`ballot_proof_mimc.circom`](./circuits/ballot_proof_mimc.circom)): Same as `ballot_proof.circom`, but in this case each input is private unless the hash (MiMC7) of each input is provided. This circuit also proves that the given hash is correct.
+    ```
+    template instances: 113
+    non-linear constraints: 55815
+    linear constraints: 0
+    public inputs: 1
+    private inputs: 55
+    public outputs: 0
+    wires: 55764
+    labels: 187589
+    ```
+    <small>For `n_fields = 8`.</small>
+ * **Ballot proof** ([`ballot_proof_poseidon.circom`](./circuits/ballot_proof_poseidon.circom)): Same as `ballot_proof.circom`, but in this case each input is private unless the hash (Poseidon) of each input is provided. This circuit also proves that the given hash is correct.
+    ```
+    template instances: 343
+    non-linear constraints: 38300
+    linear constraints: 0
+    public inputs: 1
+    private inputs: 55
+    public outputs: 0
+    wires: 38249
+    labels: 181444
+    ```
+    <small>For `n_fields = 8`.</small>
 
 ## Circuit compilation for testing 
 
@@ -81,6 +105,16 @@ The circuits execution (proof generation and verification) can be done using `go
 * **Ballot proof**
     ```sh 
     go test -timeout 30s -run ^TestBallotProof$ github.com/vocdoni/z-ircuits/test -v -count=1
+    ```
+
+* **Ballot proof MiMC7**
+    ```sh 
+    go test -timeout 30s -run ^TestBallotProofMiMC$ github.com/vocdoni/z-ircuits/test -v -count=1
+    ```
+
+* **Ballot proof Poseidon**
+    ```sh 
+    go test -timeout 30s -run ^TestBallotProofPoseidon$ github.com/vocdoni/z-ircuits/test -v -count=1
     ```
 
 ### Typescript
