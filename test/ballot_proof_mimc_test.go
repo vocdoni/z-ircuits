@@ -2,7 +2,6 @@ package test
 
 import (
 	"encoding/json"
-	"flag"
 	"fmt"
 	"log"
 	"math"
@@ -18,14 +17,6 @@ import (
 )
 
 func TestBallotProofMiMC(t *testing.T) {
-	var (
-		testID  string
-		persist bool
-	)
-	flag.StringVar(&testID, "testID", "", "Test ID")
-	flag.BoolVar(&persist, "persist", false, "Persist the test data")
-	flag.Parse()
-
 	if persist && testID == "" {
 		t.Error("Test ID is required when persisting")
 		return
