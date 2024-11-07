@@ -150,3 +150,8 @@ npm run build
     ```sh 
     npm run ballot_proof
     ```
+
+* **Ballot proof hashed inputs (Poseidon)**
+    ```sh 
+    npm run ballot_proof_poseidon
+    ```

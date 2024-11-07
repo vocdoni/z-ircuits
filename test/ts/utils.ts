@@ -35,6 +35,34 @@ export function strToBigInt(str: string): bigint {
 
 export const hash = poseidon.hash;
 
+export function multiHash(inputs: bigint[]): bigint {
+    if (inputs.length > 256) {
+        throw new Error("too many inputs");
+    } else if (inputs.length === 0) {
+        throw new Error("no inputs provided");
+    }
+    // calculate chunk hashes
+    const hashes: bigint[] = [];
+    let chunk: bigint[] = [];
+    for (const input of inputs) {
+        if (chunk.length === 16) {
+            const hash = poseidon.hash(chunk);
+            hashes.push(hash);
+            chunk = [];
+        }
+        chunk.push(input);
+    }
+    // if the final chunk is not empty, hash it to get the last chunk hash
+    if (chunk.length > 0) {
+        const hash = poseidon.hash(chunk);
+        hashes.push(hash);
+    }
+    // if there is only one chunk hash, return it
+    if (hashes.length === 1) return hashes[0];
+    // return the hash of all chunk hashes
+    return poseidon.hash(hashes);
+}
+
 export async function prove(inputs: any, circuit_wasm: string, proving_key: string): Promise<[any, any]> {
     const { proof, publicSignals } = await snarkjs.groth16.fullProve(inputs, circuit_wasm, proving_key);
     return [proof, publicSignals];

@@ -3,7 +3,8 @@
     "build": "tsc -p tsconfig.json",
     "ballot_checker": "node dist/ballot_checker_test.js",
     "ballot_cipher": "node dist/ballot_cipher_test.js",
-    "ballot_proof": "node dist/ballot_proof_test.js"
+    "ballot_proof": "node dist/ballot_proof_test.js",
+    "ballot_proof_poseidon": "node dist/ballot_proof_poseidon_test.js"
   },
   "devDependencies": {
     "@types/node": "^22.8.3",

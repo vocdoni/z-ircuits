@@ -70,6 +70,10 @@ func MultiPoseidon(inputs ...*big.Int) (*big.Int, error) {
 		}
 		hashes = append(hashes, hash)
 	}
+	// if there is only one chunk hash, return it
+	if len(hashes) == 1 {
+		return hashes[0], nil
+	}
 	// return the hash of all chunk hashes
 	return poseidon.Hash(hashes)
 }
