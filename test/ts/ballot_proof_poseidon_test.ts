@@ -80,11 +80,8 @@ import { bigIntToField, hexToField, strToBigInt, hash, multiHash, encrypt, prove
         BigInt(inputs.weight),
         inputs.pk[0],
         inputs.pk[1],
-        inputs.k,
         inputs.nullifier,
         inputs.commitment,
-        inputs.secret,
-        ...bigFields,
         ...plainBigCipherFields
     ]);
     console.log("inputs", inputs);

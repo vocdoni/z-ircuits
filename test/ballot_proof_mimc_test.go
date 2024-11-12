@@ -108,12 +108,9 @@ func TestBallotProofMiMC(t *testing.T) {
 		big.NewInt(int64(weight)),
 		pubKey.X,
 		pubKey.Y,
-		k,
 		nullifier,
 		commitment,
-		util.BigToFF(new(big.Int).SetBytes(secret)),
 	}
-	bigInputs = append(bigInputs, utils.BigIntArrayToN(fields, n_fields)...)
 	bigInputs = append(bigInputs, plainCipherfields...)
 	inputsHash, err := mimc7.Hash(bigInputs, nil)
 	if err != nil {

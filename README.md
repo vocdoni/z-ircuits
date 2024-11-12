@@ -38,7 +38,7 @@ This repository includes the templates that compose the zk-snark circuit that al
  * **Ballot proof hashed inputs (MiMC7)** ([`ballot_proof_mimc.circom`](./circuits/ballot_proof_mimc.circom)): Same as `ballot_proof.circom`, but in this case each input is private unless the hash (MiMC7) of each input is provided. This circuit also proves that the given hash is correct.
     ```
     template instances: 113
-    non-linear constraints: 55815
+    non-linear constraints: 52175
     linear constraints: 0
     public inputs: 1
     private inputs: 55
@@ -50,7 +50,7 @@ This repository includes the templates that compose the zk-snark circuit that al
  * **Ballot proof hashed inputs (Poseidon)** ([`ballot_proof_poseidon.circom`](./circuits/ballot_proof_poseidon.circom)): Same as `ballot_proof.circom`, but in this case each input is private unless the hash (Poseidon) of each input is provided. This circuit also proves that the given hash is correct.
     ```
     template instances: 343
-    non-linear constraints: 38300
+    non-linear constraints: 37817
     linear constraints: 0
     public inputs: 1
     private inputs: 55

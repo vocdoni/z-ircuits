@@ -52,7 +52,7 @@ circom $CIRCUIT --r1cs --wasm --sym -o $ARTIFACTS_DIR -l ./node_modules/circomli
 # check if ptau file exists, if not download it from https://pse-trusted-setup-ppot.s3.eu-central-1.amazonaws.com/pot28_0080/ppot_0080_20.ptau
 if [ ! -f "$ARTIFACTS_DIR/ptau" ]; then
     echo "Downloading ptau file..."
-    wget https://pse-trusted-setup-ppot.s3.eu-central-1.amazonaws.com/pot28_0080/ppot_0080_16.ptau -O $ARTIFACTS_DIR/ptau
+    wget https://pse-trusted-setup-ppot.s3.eu-central-1.amazonaws.com/pot28_0080/ppot_0080_18.ptau -O $ARTIFACTS_DIR/ptau
 fi
 
 # generate the trusted setup

@@ -33,13 +33,23 @@ template BallotProof(n_fields) {
     signal input secret;
     // Inputs hash
     signal input inputs_hash;
-    // 0. Check the hash of the inputs (all privates except the hash)
-    //  a. Fixed inputs (including pk)
-    //  b. Fields
-    //  c. Cipherfields
-    var static_inputs = 15; // including 2 of the pk
+    // 0. Check the hash of the inputs (all pubprivate inputs)
+    //  a. Ballot metadata:
+    //      - max_count
+    //      - force_uniqueness
+    //      - max_value
+    //      - min_value
+    //      - max_total_cost
+    //      - min_total_cost
+    //      - cost_exp
+    //      - cost_from_weight
+    //  b. Public encryption key (pk[2])
+    //  c. Nullifier
+    //  d. Commitment
+    //  e. Cipherfields[n_fields][2][2]
+    var static_inputs = 13; // including 2 of the pk
     var cipherfields_inputs = 4 * n_fields;
-    var n_inputs = n_fields + cipherfields_inputs + static_inputs;
+    var n_inputs = cipherfields_inputs + static_inputs;
     component inputs_hasher = MultiMiMC7(n_inputs, 91);
     inputs_hasher.k <== 0;
     inputs_hasher.in[0] <== max_count;
@@ -53,14 +63,9 @@ template BallotProof(n_fields) {
     inputs_hasher.in[8] <== weight;
     inputs_hasher.in[9] <== pk[0];
     inputs_hasher.in[10] <== pk[1];
-    inputs_hasher.in[11] <== k;
-    inputs_hasher.in[12] <== nullifier;
-    inputs_hasher.in[13] <== commitment;
-    inputs_hasher.in[14] <== secret;
-    for (var i = 0; i < n_fields; i++) {
-        inputs_hasher.in[static_inputs + i] <== fields[i];
-    }
-    var offset = static_inputs + n_fields;
+    inputs_hasher.in[11] <== nullifier;
+    inputs_hasher.in[12] <== commitment;
+    var offset = static_inputs;
     for (var i = 0; i < n_fields; i++) {
         inputs_hasher.in[offset] <== cipherfields[i][0][0];
         inputs_hasher.in[offset + 1] <== cipherfields[i][0][1];
