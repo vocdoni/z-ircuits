@@ -39,7 +39,7 @@ func TestBallotProofMiMC(t *testing.T) {
 		n_fields        = 8
 		maxCount        = 5
 		forceUniqueness = 1
-		maxValue        = 16 + 1
+		maxValue        = 16
 		minValue        = 0
 		costExp         = 2
 		costFromWeight  = 0
@@ -101,7 +101,7 @@ func TestBallotProofMiMC(t *testing.T) {
 		big.NewInt(int64(forceUniqueness)),
 		big.NewInt(int64(maxValue)),
 		big.NewInt(int64(minValue)),
-		big.NewInt(int64(math.Pow(float64(maxValue-1), float64(costExp))) * int64(maxCount)),
+		big.NewInt(int64(math.Pow(float64(maxValue), float64(costExp))) * int64(maxCount)),
 		big.NewInt(int64(maxCount)),
 		big.NewInt(int64(costExp)),
 		big.NewInt(int64(costFromWeight)),
@@ -125,7 +125,7 @@ func TestBallotProofMiMC(t *testing.T) {
 		"force_uniqueness": fmt.Sprint(forceUniqueness),
 		"max_value":        fmt.Sprint(maxValue),
 		"min_value":        fmt.Sprint(minValue),
-		"max_total_cost":   fmt.Sprint(int(math.Pow(float64(maxValue-1), float64(costExp))) * maxCount), // (maxValue-1)^costExp * maxCount
+		"max_total_cost":   fmt.Sprint(int(math.Pow(float64(maxValue), float64(costExp))) * maxCount), // (maxValue-1)^costExp * maxCount
 		"min_total_cost":   fmt.Sprint(maxCount),
 		"cost_exp":         fmt.Sprint(costExp),
 		"cost_from_weight": fmt.Sprint(costFromWeight),

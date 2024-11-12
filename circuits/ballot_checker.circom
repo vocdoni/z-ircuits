@@ -31,7 +31,7 @@ template BallotChecker(n_fields) {
     inBounds.arr <== fields;
     inBounds.mask <== mask;
     inBounds.min <== min_value;
-    inBounds.max <== max_value;
+    inBounds.max <== max_value+1;
     // compute total cost: sum of all fields to the power of cost_exp
     signal total_cost;
     component sum_calc = SumPow(n_fields, 128);

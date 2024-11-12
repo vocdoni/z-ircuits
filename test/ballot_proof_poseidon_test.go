@@ -28,17 +28,11 @@ func TestBallotProofPoseidon(t *testing.T) {
 	}
 	var (
 		// ballot inputs
-		fields = []*big.Int{
-			big.NewInt(3),
-			big.NewInt(5),
-			big.NewInt(2),
-			big.NewInt(4),
-			big.NewInt(1),
-		}
+		fields          = ballotFieldsGenerator(5, 0, 16)
 		n_fields        = 8
 		maxCount        = 5
-		forceUniqueness = 1
-		maxValue        = 16 + 1
+		forceUniqueness = 0
+		maxValue        = 16
 		minValue        = 0
 		costExp         = 2
 		costFromWeight  = 0
@@ -100,7 +94,7 @@ func TestBallotProofPoseidon(t *testing.T) {
 		big.NewInt(int64(forceUniqueness)),
 		big.NewInt(int64(maxValue)),
 		big.NewInt(int64(minValue)),
-		big.NewInt(int64(math.Pow(float64(maxValue-1), float64(costExp))) * int64(maxCount)),
+		big.NewInt(int64(math.Pow(float64(maxValue), float64(costExp))) * int64(maxCount)),
 		big.NewInt(int64(maxCount)),
 		big.NewInt(int64(costExp)),
 		big.NewInt(int64(costFromWeight)),
@@ -123,7 +117,7 @@ func TestBallotProofPoseidon(t *testing.T) {
 		"force_uniqueness": fmt.Sprint(forceUniqueness),
 		"max_value":        fmt.Sprint(maxValue),
 		"min_value":        fmt.Sprint(minValue),
-		"max_total_cost":   fmt.Sprint(int(math.Pow(float64(maxValue-1), float64(costExp))) * maxCount), // (maxValue-1)^costExp * maxCount
+		"max_total_cost":   fmt.Sprint(int(math.Pow(float64(maxValue), float64(costExp))) * maxCount), // (maxValue)^costExp * maxCount
 		"min_total_cost":   fmt.Sprint(maxCount),
 		"cost_exp":         fmt.Sprint(costExp),
 		"cost_from_weight": fmt.Sprint(costFromWeight),
@@ -157,11 +151,18 @@ func TestBallotProofPoseidon(t *testing.T) {
 	}
 	log.Println("Proof verified")
 	if persist {
-		if err := os.WriteFile(fmt.Sprintf("./%s_proof.json", testID), []byte(proofData), 0644); err != nil {
+		// try to create the directory if it doesn't exist
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			if err := os.Mkdir(path, 0755); err != nil {
+				t.Errorf("Error creating directory: %v\n", err)
+				return
+			}
+		}
+		if err := os.WriteFile(fmt.Sprintf("%s/%s_proof.json", path, testID), []byte(proofData), 0644); err != nil {
 			t.Errorf("Error writing proof file: %v\n", err)
 			return
 		}
-		if err := os.WriteFile(fmt.Sprintf("./%s_pub_signals.json", testID), []byte(pubSignals), 0644); err != nil {
+		if err := os.WriteFile(fmt.Sprintf("%s/%s_pub_signals.json", path, testID), []byte(pubSignals), 0644); err != nil {
 			t.Errorf("Error writing public signals file: %v\n", err)
 			return
 		}
