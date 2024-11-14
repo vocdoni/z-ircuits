@@ -23,6 +23,7 @@ template BallotProof(n_fields) {
     signal input cost_exp;
     signal input cost_from_weight;
     signal input weight;
+    signal input process_id;
     // ElGamal inputs
     signal input pk[2];
     signal input k;
@@ -47,7 +48,7 @@ template BallotProof(n_fields) {
     //  c. Nullifier
     //  d. Commitment
     //  e. Cipherfields[n_fields][2][2]
-    var static_inputs = 13; // including 2 of the pk
+    var static_inputs = 14; // including 2 of the pk
     var cipherfields_inputs = 4 * n_fields;
     var n_inputs = cipherfields_inputs + static_inputs;
     component inputs_hasher = MultiMiMC7(n_inputs, 91);
@@ -61,10 +62,11 @@ template BallotProof(n_fields) {
     inputs_hasher.in[6] <== cost_exp;
     inputs_hasher.in[7] <== cost_from_weight;
     inputs_hasher.in[8] <== weight;
-    inputs_hasher.in[9] <== pk[0];
-    inputs_hasher.in[10] <== pk[1];
-    inputs_hasher.in[11] <== nullifier;
-    inputs_hasher.in[12] <== commitment;
+    inputs_hasher.in[9] <== process_id;
+    inputs_hasher.in[10] <== pk[0];
+    inputs_hasher.in[11] <== pk[1];
+    inputs_hasher.in[12] <== nullifier;
+    inputs_hasher.in[13] <== commitment;
     var offset = static_inputs;
     for (var i = 0; i < n_fields; i++) {
         inputs_hasher.in[offset] <== cipherfields[i][0][0];
