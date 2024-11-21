@@ -44,10 +44,11 @@ template BallotProof(n_fields) {
     //      - min_total_cost
     //      - cost_exp
     //      - cost_from_weight
-    //  b. Public encryption key (pk[2])
-    //  c. Nullifier
-    //  d. Commitment
-    //  e. Cipherfields[n_fields][2][2]
+    //  b. ProcessID
+    //  c. Public encryption key (pk[2])
+    //  d. Nullifier
+    //  e. Commitment
+    //  f. Cipherfields[n_fields][2][2]
     var static_inputs = 14; // including 2 of the pk
     var cipherfields_inputs = 4 * n_fields;
     var n_inputs = cipherfields_inputs + static_inputs;
