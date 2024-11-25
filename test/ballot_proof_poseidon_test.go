@@ -9,7 +9,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/iden3/go-iden3-crypto/poseidon"
 	"github.com/vocdoni/z-ircuits/utils"
 	"go.vocdoni.io/dvote/crypto/ethereum"
 	"go.vocdoni.io/dvote/util"
@@ -28,7 +27,7 @@ func TestBallotProofPoseidon(t *testing.T) {
 	}
 	var (
 		// ballot inputs
-		fields          = ballotFieldsGenerator(5, 0, 16)
+		fields          = utils.GenerateBallotFields(5, 16, 0, false)
 		n_fields        = 8
 		maxCount        = 5
 		forceUniqueness = 0
@@ -53,38 +52,10 @@ func TestBallotProofPoseidon(t *testing.T) {
 		t.Errorf("Error generating random k: %v\n", err)
 		return
 	}
-	cipherfields := make([][][]string, n_fields)
-	plainCipherfields := []*big.Int{}
-	for i := 0; i < n_fields; i++ {
-		if i < len(fields) {
-			c1, c2 := utils.Encrypt(fields[i], pubKey, k)
-			cipherfields[i] = [][]string{
-				{c1.X.String(), c1.Y.String()},
-				{c2.X.String(), c2.Y.String()},
-			}
-			plainCipherfields = append(plainCipherfields, c1.X, c1.Y, c2.X, c2.Y)
-		} else {
-			cipherfields[i] = [][]string{
-				{"0", "0"},
-				{"0", "0"},
-			}
-			plainCipherfields = append(plainCipherfields, big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
-		}
-	}
-	// generate the nullifier
-	commitment, err := poseidon.Hash([]*big.Int{
-		util.BigToFF(new(big.Int).SetBytes(address)),
-		util.BigToFF(new(big.Int).SetBytes(processID)),
-		util.BigToFF(new(big.Int).SetBytes(secret)),
-	})
-	if err != nil {
-		log.Fatalf("Error hashing: %v\n", err)
-		return
-	}
-	nullifier, err := poseidon.Hash([]*big.Int{
-		commitment,
-		util.BigToFF(new(big.Int).SetBytes(secret)),
-	})
+	// encrypt ballot fields and get them in plain format
+	cipherfields, plainCipherfields := utils.CipherBallotFields(fields, n_fields, pubKey, k)
+	// generate the commitment and nullifier
+	commitment, nullifier, err := utils.MockedCommitmentAndNullifier(address, processID, secret)
 	if err != nil {
 		log.Fatalf("Error hashing: %v\n", err)
 		return
@@ -98,6 +69,7 @@ func TestBallotProofPoseidon(t *testing.T) {
 		big.NewInt(int64(maxCount)),
 		big.NewInt(int64(costExp)),
 		big.NewInt(int64(costFromWeight)),
+		util.BigToFF(new(big.Int).SetBytes(address)),
 		big.NewInt(int64(weight)),
 		util.BigToFF(new(big.Int).SetBytes(processID)),
 		pubKey.X,
@@ -122,6 +94,7 @@ func TestBallotProofPoseidon(t *testing.T) {
 		"min_total_cost":   fmt.Sprint(maxCount),
 		"cost_exp":         fmt.Sprint(costExp),
 		"cost_from_weight": fmt.Sprint(costFromWeight),
+		"address":          util.BigToFF(new(big.Int).SetBytes(address)).String(),
 		"weight":           fmt.Sprint(weight),
 		"process_id":       util.BigToFF(new(big.Int).SetBytes(processID)).String(),
 		"pk":               []string{pubKey.X.String(), pubKey.Y.String()},

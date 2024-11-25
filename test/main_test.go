@@ -1,9 +1,7 @@
 package test
 
 import (
-	"crypto/rand"
 	"flag"
-	"math/big"
 	"testing"
 )
 
@@ -20,16 +18,4 @@ func TestMain(m *testing.M) {
 	flag.Parse()
 
 	m.Run()
-}
-
-func ballotFieldsGenerator(n, min, max int) []*big.Int {
-	var fields []*big.Int
-	for i := 0; i < n; i++ {
-		randValue, err := rand.Int(rand.Reader, big.NewInt(int64(max-min)))
-		if err != nil {
-			panic(err)
-		}
-		fields = append(fields, randValue.Add(randValue, big.NewInt(int64(min))))
-	}
-	return fields
 }

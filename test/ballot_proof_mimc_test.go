@@ -10,7 +10,6 @@ import (
 	"testing"
 
 	"github.com/iden3/go-iden3-crypto/mimc7"
-	"github.com/iden3/go-iden3-crypto/poseidon"
 	"github.com/vocdoni/z-ircuits/utils"
 	"go.vocdoni.io/dvote/crypto/ethereum"
 	"go.vocdoni.io/dvote/util"
@@ -21,7 +20,7 @@ func TestBallotProofMiMC(t *testing.T) {
 		t.Error("Test ID is required when persisting")
 		return
 	}
-
+	// generate ethereum account
 	acc := ethereum.NewSignKeys()
 	if err := acc.Generate(); err != nil {
 		t.Error(err)
@@ -29,18 +28,12 @@ func TestBallotProofMiMC(t *testing.T) {
 	}
 	var (
 		// ballot inputs
-		fields = []*big.Int{
-			big.NewInt(3),
-			big.NewInt(5),
-			big.NewInt(2),
-			big.NewInt(4),
-			big.NewInt(1),
-		}
 		n_fields        = 8
 		maxCount        = 5
 		forceUniqueness = 1
 		maxValue        = 16
 		minValue        = 0
+		fields          = utils.GenerateBallotFields(n_fields, maxValue, minValue, true)
 		costExp         = 2
 		costFromWeight  = 0
 		weight          = 0
@@ -60,38 +53,10 @@ func TestBallotProofMiMC(t *testing.T) {
 		t.Errorf("Error generating random k: %v\n", err)
 		return
 	}
-	cipherfields := make([][][]string, n_fields)
-	plainCipherfields := []*big.Int{}
-	for i := 0; i < n_fields; i++ {
-		if i < len(fields) {
-			c1, c2 := utils.Encrypt(fields[i], pubKey, k)
-			cipherfields[i] = [][]string{
-				{c1.X.String(), c1.Y.String()},
-				{c2.X.String(), c2.Y.String()},
-			}
-			plainCipherfields = append(plainCipherfields, c1.X, c1.Y, c2.X, c2.Y)
-		} else {
-			cipherfields[i] = [][]string{
-				{"0", "0"},
-				{"0", "0"},
-			}
-			plainCipherfields = append(plainCipherfields, big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
-		}
-	}
+	// encrypt ballot fields and get them in plain format
+	cipherfields, plainCipherfields := utils.CipherBallotFields(fields, n_fields, pubKey, k)
 	// generate the nullifier
-	commitment, err := poseidon.Hash([]*big.Int{
-		util.BigToFF(new(big.Int).SetBytes(address)),
-		util.BigToFF(new(big.Int).SetBytes(processID)),
-		util.BigToFF(new(big.Int).SetBytes(secret)),
-	})
-	if err != nil {
-		log.Fatalf("Error hashing: %v\n", err)
-		return
-	}
-	nullifier, err := poseidon.Hash([]*big.Int{
-		commitment,
-		util.BigToFF(new(big.Int).SetBytes(secret)),
-	})
+	commitment, nullifier, err := utils.MockedCommitmentAndNullifier(address, processID, secret)
 	if err != nil {
 		log.Fatalf("Error hashing: %v\n", err)
 		return
@@ -105,6 +70,7 @@ func TestBallotProofMiMC(t *testing.T) {
 		big.NewInt(int64(maxCount)),
 		big.NewInt(int64(costExp)),
 		big.NewInt(int64(costFromWeight)),
+		util.BigToFF(new(big.Int).SetBytes(address)),
 		big.NewInt(int64(weight)),
 		util.BigToFF(new(big.Int).SetBytes(processID)),
 		pubKey.X,
@@ -118,7 +84,6 @@ func TestBallotProofMiMC(t *testing.T) {
 		log.Fatalf("Error hashing: %v\n", err)
 		return
 	}
-
 	// circuit inputs
 	inputs := map[string]any{
 		"fields":           utils.BigIntArrayToStringArray(fields, n_fields),
@@ -130,6 +95,7 @@ func TestBallotProofMiMC(t *testing.T) {
 		"min_total_cost":   fmt.Sprint(maxCount),
 		"cost_exp":         fmt.Sprint(costExp),
 		"cost_from_weight": fmt.Sprint(costFromWeight),
+		"address":          util.BigToFF(new(big.Int).SetBytes(address)).String(),
 		"weight":           fmt.Sprint(weight),
 		"process_id":       util.BigToFF(new(big.Int).SetBytes(processID)).String(),
 		"pk":               []string{pubKey.X.String(), pubKey.Y.String()},

@@ -22,6 +22,7 @@ template BallotProof(n_fields) {
     signal input min_total_cost;
     signal input cost_exp;
     signal input cost_from_weight;
+    signal input address;
     signal input weight;
     signal input process_id;
     // ElGamal inputs
@@ -44,12 +45,14 @@ template BallotProof(n_fields) {
     //      - min_total_cost
     //      - cost_exp
     //      - cost_from_weight
-    //  b. ProcessID
-    //  c. Public encryption key (pk[2])
-    //  d. Nullifier
-    //  e. Commitment
-    //  f. Cipherfields[n_fields][2][2]
-    var static_inputs = 14; // including 2 of the pk
+    //  b. Address
+    //  c. Weight
+    //  c. ProcessID
+    //  d. Public encryption key (pk[2])
+    //  e. Nullifier
+    //  f. Commitment
+    //  g. Cipherfields[n_fields][2][2]
+    var static_inputs = 15; // including 2 of the pk
     var cipherfields_inputs = 4 * n_fields;
     var n_inputs = cipherfields_inputs + static_inputs;
     component inputs_hasher = MultiMiMC7(n_inputs, 91);
@@ -62,12 +65,13 @@ template BallotProof(n_fields) {
     inputs_hasher.in[5] <== min_total_cost;
     inputs_hasher.in[6] <== cost_exp;
     inputs_hasher.in[7] <== cost_from_weight;
-    inputs_hasher.in[8] <== weight;
-    inputs_hasher.in[9] <== process_id;
-    inputs_hasher.in[10] <== pk[0];
-    inputs_hasher.in[11] <== pk[1];
-    inputs_hasher.in[12] <== nullifier;
-    inputs_hasher.in[13] <== commitment;
+    inputs_hasher.in[8] <== address;
+    inputs_hasher.in[9] <== weight;
+    inputs_hasher.in[10] <== process_id;
+    inputs_hasher.in[11] <== pk[0];
+    inputs_hasher.in[12] <== pk[1];
+    inputs_hasher.in[13] <== nullifier;
+    inputs_hasher.in[14] <== commitment;
     var offset = static_inputs;
     for (var i = 0; i < n_fields; i++) {
         inputs_hasher.in[offset] <== cipherfields[i][0][0];
@@ -97,9 +101,14 @@ template BallotProof(n_fields) {
     ballotCipher.mask <== ballotProtocol.mask;
     ballotCipher.cipherfields <== cipherfields;
     ballotCipher.valid_fields === max_count;
-    // 3. Check the nullifier
-    component hash = Poseidon(2);
-    hash.inputs[0] <== commitment;
-    hash.inputs[1] <== secret;
-    hash.out === nullifier;
+    // 3. Check the commitment and nullifier
+    component commitmentHash = Poseidon(3);
+    commitmentHash.inputs[0] <== address;
+    commitmentHash.inputs[1] <== process_id;
+    commitmentHash.inputs[2] <== secret;
+    commitmentHash.out === commitment;
+    component nullifierHash = Poseidon(2);
+    nullifierHash.inputs[0] <== commitment;
+    nullifierHash.inputs[1] <== secret;
+    nullifierHash.out === nullifier;
 }

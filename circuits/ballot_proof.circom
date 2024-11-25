@@ -21,7 +21,9 @@ template BallotProof(n_fields) {
     signal input min_total_cost;    // public
     signal input cost_exp;          // public
     signal input cost_from_weight;  // public
-    signal input weight;            // public
+    signal input address;
+    signal input weight;
+    signal input process_id;
     // ElGamal inputs
     signal input pk[2];                         // public
     signal input k;                             // private
@@ -50,9 +52,14 @@ template BallotProof(n_fields) {
     ballotCipher.mask <== ballotProtocol.mask;
     ballotCipher.cipherfields <== cipherfields;
     ballotCipher.valid_fields === max_count;
-    // 3. Check the nullifier
-    component hash = Poseidon(2);
-    hash.inputs[0] <== commitment;
-    hash.inputs[1] <== secret;
-    hash.out === nullifier;
+    // 3. Check the commitment and nullifier
+    component commitmentHash = Poseidon(3);
+    commitmentHash.inputs[0] <== address;
+    commitmentHash.inputs[1] <== process_id;
+    commitmentHash.inputs[2] <== secret;
+    commitmentHash.out === commitment;
+    component nullifierHash = Poseidon(2);
+    nullifierHash.inputs[0] <== commitment;
+    nullifierHash.inputs[1] <== secret;
+    nullifierHash.out === nullifier;
 }
