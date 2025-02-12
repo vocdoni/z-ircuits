@@ -25,12 +25,12 @@ import { bigIntToField, hexToField, strToBigInt, hash, multiHash, encrypt, prove
         }
     }
     // compute nullifier
-    const address = "0x6Db989fbe7b1308cc59A27f021e2E3de9422CF0A";
-    const process_id = "0xf16236a51F11c0Bf97180eB16694e3A345E42506";
+    const address = hexToField("0x6Db989fbe7b1308cc59A27f021e2E3de9422CF0A");
+    const process_id = hexToField("0xf16236a51F11c0Bf97180eB16694e3A345E42506");
     const secret = "super-secret-mnemonic-phrase";
     const commitment = hash([
-        hexToField(address),
-        hexToField(process_id),
+        address,
+        process_id,
         bigIntToField(strToBigInt(secret)),
     ]);
     const nullifier = hash([
@@ -48,10 +48,12 @@ import { bigIntToField, hexToField, strToBigInt, hash, multiHash, encrypt, prove
         min_total_cost: 5,
         cost_exp: 2,
         cost_from_weight: 0,
+        process_id,
         weight: 0,
         pk: pubKey,
         k,
         cipherfields,
+        address,
         nullifier,
         commitment,
         secret: bigIntToField(strToBigInt(secret)),
@@ -69,6 +71,7 @@ import { bigIntToField, hexToField, strToBigInt, hash, multiHash, encrypt, prove
         plainBigCipherFields.push(cipherfields[i][1][1] as bigint);
     }
     inputs.inputs_hash = multiHash([
+        inputs.process_id,
         BigInt(inputs.max_count),
         BigInt(inputs.force_uniqueness),
         BigInt(inputs.max_value),
@@ -77,12 +80,13 @@ import { bigIntToField, hexToField, strToBigInt, hash, multiHash, encrypt, prove
         BigInt(inputs.min_total_cost),
         BigInt(inputs.cost_exp),
         BigInt(inputs.cost_from_weight),
-        BigInt(inputs.weight),
         inputs.pk[0],
         inputs.pk[1],
-        inputs.nullifier,
+        address,
         inputs.commitment,
-        ...plainBigCipherFields
+        inputs.nullifier,
+        ...plainBigCipherFields,
+        BigInt(inputs.weight),
     ]);
     console.log("inputs", inputs);
     // generate proof

@@ -69,6 +69,8 @@ template BallotProof(n_fields) {
     inputs_hasher.in[i] <== cost_from_weight; i++;  // Process.BallotMode
     inputs_hasher.in[i] <== pk[0]; i++;             // Process.EncryptionKey
     inputs_hasher.in[i] <== pk[1]; i++;             // Process.EncryptionKey
+    inputs_hasher.in[i] <== address; i++;           // Vote.Address
+    inputs_hasher.in[i] <== commitment; i++;        // Vote.Commitment
     inputs_hasher.in[i] <== nullifier; i++;         // Vote.Nullifier
     for (var f = 0; f < n_fields; f++) {
         inputs_hasher.in[i] <== cipherfields[f][0][0]; i++; // Vote.Ballot
@@ -76,9 +78,7 @@ template BallotProof(n_fields) {
         inputs_hasher.in[i] <== cipherfields[f][1][0]; i++; // Vote.Ballot
         inputs_hasher.in[i] <== cipherfields[f][1][1]; i++; // Vote.Ballot
     }
-    inputs_hasher.in[i] <== address; i++;           // Vote.Address
-    inputs_hasher.in[i] <== commitment; i++;        // Vote.Commitment
-    inputs_hasher.in[i] <== weight; i++;            // UserWeight
+    inputs_hasher.in[i] <== weight; i++; // UserWeight
     inputs_hasher.out === inputs_hash;
     // 1. Check the vote meets the ballot requirements
     component ballotProtocol = BallotChecker(n_fields);

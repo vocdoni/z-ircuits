@@ -61,6 +61,7 @@ func TestBallotProofPoseidon(t *testing.T) {
 		return
 	}
 	bigInputs := []*big.Int{
+		util.BigToFF(new(big.Int).SetBytes(processID)),
 		big.NewInt(int64(maxCount)),
 		big.NewInt(int64(forceUniqueness)),
 		big.NewInt(int64(maxValue)),
@@ -69,15 +70,14 @@ func TestBallotProofPoseidon(t *testing.T) {
 		big.NewInt(int64(maxCount)),
 		big.NewInt(int64(costExp)),
 		big.NewInt(int64(costFromWeight)),
-		util.BigToFF(new(big.Int).SetBytes(address)),
-		big.NewInt(int64(weight)),
-		util.BigToFF(new(big.Int).SetBytes(processID)),
 		pubKey.X,
 		pubKey.Y,
-		nullifier,
+		util.BigToFF(new(big.Int).SetBytes(address)),
 		commitment,
+		nullifier,
 	}
 	bigInputs = append(bigInputs, plainCipherfields...)
+	bigInputs = append(bigInputs, big.NewInt(int64(weight)))
 	inputsHash, err := utils.MultiPoseidon(bigInputs...)
 	if err != nil {
 		log.Fatalf("Error hashing: %v\n", err)
