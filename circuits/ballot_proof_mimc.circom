@@ -36,7 +36,8 @@ template BallotProof(n_fields) {
     // Inputs hash
     signal input inputs_hash;
     // 0. Check the hash of the inputs (all pubprivate inputs)
-    //  a. Ballot metadata:
+    //  a. ProcessID
+    //  b. Ballot metadata:
     //      - max_count
     //      - force_uniqueness
     //      - max_value
@@ -45,41 +46,39 @@ template BallotProof(n_fields) {
     //      - min_total_cost
     //      - cost_exp
     //      - cost_from_weight
-    //  b. Address
-    //  c. Weight
-    //  c. ProcessID
-    //  d. Public encryption key (pk[2])
-    //  e. Nullifier
-    //  f. Commitment
-    //  g. Cipherfields[n_fields][2][2]
+    //  c. Public encryption key (pk[2])
+    //  d. Nullifier
+    //  e. Cipherfields[n_fields][2][2]
+    //  f. Address
+    //  g. Commitment
+    //  h. Weight
     var static_inputs = 15; // including 2 of the pk
     var cipherfields_inputs = 4 * n_fields;
     var n_inputs = cipherfields_inputs + static_inputs;
     component inputs_hasher = MultiMiMC7(n_inputs, 91);
     inputs_hasher.k <== 0;
-    inputs_hasher.in[0] <== max_count;
-    inputs_hasher.in[1] <== force_uniqueness;
-    inputs_hasher.in[2] <== max_value;
-    inputs_hasher.in[3] <== min_value;
-    inputs_hasher.in[4] <== max_total_cost;
-    inputs_hasher.in[5] <== min_total_cost;
-    inputs_hasher.in[6] <== cost_exp;
-    inputs_hasher.in[7] <== cost_from_weight;
-    inputs_hasher.in[8] <== address;
-    inputs_hasher.in[9] <== weight;
-    inputs_hasher.in[10] <== process_id;
-    inputs_hasher.in[11] <== pk[0];
-    inputs_hasher.in[12] <== pk[1];
-    inputs_hasher.in[13] <== nullifier;
-    inputs_hasher.in[14] <== commitment;
-    var offset = static_inputs;
-    for (var i = 0; i < n_fields; i++) {
-        inputs_hasher.in[offset] <== cipherfields[i][0][0];
-        inputs_hasher.in[offset + 1] <== cipherfields[i][0][1];
-        inputs_hasher.in[offset + 2] <== cipherfields[i][1][0];
-        inputs_hasher.in[offset + 3] <== cipherfields[i][1][1];
-        offset += 4;
+    var i = 0;
+    inputs_hasher.in[i] <== process_id; i++;        // Process.ID
+    inputs_hasher.in[i] <== max_count; i++;         // Process.BallotMode
+    inputs_hasher.in[i] <== force_uniqueness; i++;  // Process.BallotMode
+    inputs_hasher.in[i] <== max_value; i++;         // Process.BallotMode
+    inputs_hasher.in[i] <== min_value; i++;         // Process.BallotMode
+    inputs_hasher.in[i] <== max_total_cost; i++;    // Process.BallotMode
+    inputs_hasher.in[i] <== min_total_cost; i++;    // Process.BallotMode
+    inputs_hasher.in[i] <== cost_exp; i++;          // Process.BallotMode
+    inputs_hasher.in[i] <== cost_from_weight; i++;  // Process.BallotMode
+    inputs_hasher.in[i] <== pk[0]; i++;             // Process.EncryptionKey
+    inputs_hasher.in[i] <== pk[1]; i++;             // Process.EncryptionKey
+    inputs_hasher.in[i] <== nullifier; i++;         // Vote.Nullifier
+    for (var f = 0; f < n_fields; f++) {
+        inputs_hasher.in[i] <== cipherfields[f][0][0]; i++; // Vote.Ballot
+        inputs_hasher.in[i] <== cipherfields[f][0][1]; i++; // Vote.Ballot
+        inputs_hasher.in[i] <== cipherfields[f][1][0]; i++; // Vote.Ballot
+        inputs_hasher.in[i] <== cipherfields[f][1][1]; i++; // Vote.Ballot
     }
+    inputs_hasher.in[i] <== address; i++;           // Vote.Address
+    inputs_hasher.in[i] <== commitment; i++;        // Vote.Commitment
+    inputs_hasher.in[i] <== weight; i++;            // UserWeight
     inputs_hasher.out === inputs_hash;
     // 1. Check the vote meets the ballot requirements
     component ballotProtocol = BallotChecker(n_fields);
