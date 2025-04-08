@@ -33,6 +33,14 @@ export function strToBigInt(str: string): bigint {
     return BigInt('0x' + hex);
 }
 
+export function uint8ArrayToBigInt(arr: Uint8Array): bigint {
+    let result = BigInt(0);
+    for (const byte of arr) {
+        result = (result << BigInt(8)) | BigInt(byte);
+    }
+    return result;
+}
+
 export const hash = poseidon.hash;
 
 export function multiHash(inputs: bigint[]): bigint {
