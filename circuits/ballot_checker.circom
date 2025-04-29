@@ -39,6 +39,12 @@ template BallotChecker(n_fields) {
     sum_calc.mask <== mask;
     sum_calc.exp <== cost_exp;
     total_cost <== sum_calc.out;
+    // if max_total_cost is 0, then the cost is not bounded
+    component hasMax = GreaterThan(128);
+    hasMax.in[0] <== max_total_cost;
+    hasMax.in[1] <== 0;
+    signal useMax;
+    useMax <== hasMax.out;
     // select max_total_cost if cost_from_weight is 0, otherwise use weight
     component mux = Mux();
     mux.a <== max_total_cost;
@@ -48,7 +54,9 @@ template BallotChecker(n_fields) {
     component lt = LessThan(128);
     lt.in[0] <== total_cost;
     lt.in[1] <== mux.out;
-    lt.out === 1;
+    // lt.out === 1;
+    // only enforce when max_total_cost > 0
+    useMax * lt.out === useMax;
     // encrease by 1 the total_cost to allow equality with min_total_cost and 
     // avoid negative overflow decreasing min_total_cost
     component gt = GreaterThan(128);
