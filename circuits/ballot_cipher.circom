@@ -1,6 +1,7 @@
 pragma circom 2.1.0;
 
 include "comparators.circom";
+include "mimc.circom";
 include "./lib/elgamal.circom";
 
 template FieldComparator() {
@@ -40,11 +41,25 @@ template BallotCipher(n_fields) {
     // create signals to count the number of valid fields
     signal sum[n_fields + 1];
     sum[0] <== 0;
+    // calculate the different k's derived from the provided one using recursive
+    // mimc7 hashing
+    signal ks[n_fields + 1];
+    ks[0] <== k;
+    component k_hasher[n_fields];
+    for (var i = 0; i < n_fields; i++) {
+        k_hasher[i] = MultiMiMC7(1, 91);
+        k_hasher[i].k <== 0;
+        k_hasher[i].in[0] <== ks[i];
+        ks[i+1] <== k_hasher[i].out;
+    }
+    // encrypt the fields using ElGamal and compare the results with the 
+    // provided ciphertexts. The result of the comparison is used to count the 
+    // number of valid fields.
     for (var i = 0; i < n_fields; i++) {
         ciphers[i] = ElGamal();
         ciphers[i].pk <== pk;
         ciphers[i].msg <== fields[i];
-        ciphers[i].k <== k;
+        ciphers[i].k <== ks[i+1];
         // compare the encrypted fields
         fieldComparator[i] = FieldComparator();
         fieldComparator[i].expected <== cipherfields[i];

@@ -11,8 +11,8 @@ template ElGamal() {
     signal input msg;   // [priv] message to encrypt
     signal input k;     // [priv] random number
 
-    signal output c1[2];    // first part of the ciphertext
-    signal output c2[2];    // second part of the ciphertext
+    signal output c1[2]; // first point of the ciphertext
+    signal output c2[2]; // second point of the ciphertext
 
     // ensure that public key is on the curve
     component pkCheck = BabyCheck();
@@ -31,24 +31,26 @@ template ElGamal() {
         16950150798460657717958625567821834550301663161624707787222815936182638968203
     ];
     // encode the message as a point on the curve
-    component messageBits = Num2Bits(32);
+    var msg_bits = 32;
+    component messageBits = Num2Bits(msg_bits);
     messageBits.in <== msg;
-    component messagePoint = EscalarMulFix(32, base);
-    for (var i=0; i<32; i++) {
+    component messagePoint = EscalarMulFix(msg_bits, base);
+    for (var i=0; i<msg_bits; i++) {
         messageBits.out[i] ==> messagePoint.e[i];
     }
+    var k_bits = 254;
     // c1 = k * base (escalarMulFix)
-    component c1Point = EscalarMulFix(253, base);
-    component kBits = Num2Bits(253);
+    component c1Point = EscalarMulFix(k_bits, base);
+    component kBits = Num2Bits(k_bits);
     kBits.in <== k;
-    for (var i=0; i<253; i++) {
+    for (var i=0; i<k_bits; i++) {
         kBits.out[i] ==> c1Point.e[i];
     }
     // s = k * pk (escalarMulAny)
-    component sPoint = EscalarMulAny(253);
+    component sPoint = EscalarMulAny(k_bits);
     sPoint.p[0] <== pk[0];
     sPoint.p[1] <== pk[1];
-    for (var i=0; i<253; i++) {
+    for (var i=0; i<k_bits; i++) {
         kBits.out[i] ==> sPoint.e[i];
     }
     // c2 = msg + s (babyAdd)

@@ -5,6 +5,7 @@ import (
 	"math/big"
 
 	"github.com/iden3/go-iden3-crypto/babyjub"
+	"github.com/iden3/go-iden3-crypto/mimc7"
 	"github.com/iden3/go-iden3-crypto/poseidon"
 	"go.vocdoni.io/dvote/util"
 )
@@ -35,9 +36,14 @@ func GenerateBallotFields(n, max, min int, unique bool) []*big.Int {
 func CipherBallotFields(fields []*big.Int, n int, pk *babyjub.PublicKey, k *big.Int) ([][][]string, []*big.Int) {
 	cipherfields := make([][][]string, n)
 	plainCipherfields := []*big.Int{}
-	for i := 0; i < n; i++ {
+
+	lastK, err := mimc7.Hash([]*big.Int{k}, nil)
+	if err != nil {
+		panic(err)
+	}
+	for i := range n {
 		if i < len(fields) {
-			c1, c2 := Encrypt(fields[i], pk, k)
+			c1, c2 := Encrypt(fields[i], pk, lastK)
 			cipherfields[i] = [][]string{
 				{c1.X.String(), c1.Y.String()},
 				{c2.X.String(), c2.Y.String()},
@@ -49,6 +55,10 @@ func CipherBallotFields(fields []*big.Int, n int, pk *babyjub.PublicKey, k *big.
 				{"0", "0"},
 			}
 			plainCipherfields = append(plainCipherfields, big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
+		}
+		lastK, err = mimc7.Hash([]*big.Int{lastK}, nil)
+		if err != nil {
+			panic(err)
 		}
 	}
 	return cipherfields, plainCipherfields
