@@ -1,4 +1,4 @@
-import { bigIntToField, hexToField, strToBigInt, hash, multiHash, encrypt, prove, verify } from './utils';
+import { hexToField, multiHash, encrypt, prove, verify } from './utils';
 
 (async () => {
     const wasm = "../../artifacts/ballot_proof_poseidon_test.wasm";
@@ -27,16 +27,6 @@ import { bigIntToField, hexToField, strToBigInt, hash, multiHash, encrypt, prove
     // compute nullifier
     const address = hexToField("0x6Db989fbe7b1308cc59A27f021e2E3de9422CF0A");
     const process_id = hexToField("0xf16236a51F11c0Bf97180eB16694e3A345E42506");
-    const secret = "super-secret-mnemonic-phrase";
-    const commitment = hash([
-        address,
-        process_id,
-        bigIntToField(strToBigInt(secret)),
-    ]);
-    const nullifier = hash([
-        commitment,
-        bigIntToField(strToBigInt(secret)),
-    ]);
     // init inputs
     const inputs = {
         fields,
@@ -54,9 +44,6 @@ import { bigIntToField, hexToField, strToBigInt, hash, multiHash, encrypt, prove
         k,
         cipherfields,
         address,
-        nullifier,
-        commitment,
-        secret: bigIntToField(strToBigInt(secret)),
         inputs_hash: BigInt(0)
     };
     const bigFields : bigint[] = [];
@@ -83,8 +70,6 @@ import { bigIntToField, hexToField, strToBigInt, hash, multiHash, encrypt, prove
         inputs.pk[0],
         inputs.pk[1],
         address,
-        inputs.commitment,
-        inputs.nullifier,
         ...plainBigCipherFields,
         BigInt(inputs.weight),
     ]);

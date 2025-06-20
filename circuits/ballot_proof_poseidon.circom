@@ -30,10 +30,6 @@ template BallotProof(n_fields) {
     signal input pk[2];
     signal input k;
     signal input cipherfields[n_fields][2][2];
-    // Nullifier inputs
-    signal input nullifier;
-    signal input commitment;
-    signal input secret;
     // Inputs hash signal will include all the inputs that could be public
     signal input inputs_hash;
     // 0. Check the hash of the inputs (all pubprivate inputs)
@@ -53,7 +49,7 @@ template BallotProof(n_fields) {
     //  e. Nullifier
     //  f. Commitment
     //  g. Cipherfields[n_fields][2][2]
-    var static_inputs = 15; // excluding k and secret
+    var static_inputs = 13; // excluding k and secret
     var cipherfields_inputs = 4 * n_fields;
     var n_inputs = cipherfields_inputs + static_inputs; 
     component inputs_hasher = MultiPoseidon(n_inputs);
@@ -70,8 +66,6 @@ template BallotProof(n_fields) {
     inputs_hasher.in[i] <== pk[0]; i++;             // Process.EncryptionKey
     inputs_hasher.in[i] <== pk[1]; i++;             // Process.EncryptionKey
     inputs_hasher.in[i] <== address; i++;           // Vote.Address
-    inputs_hasher.in[i] <== commitment; i++;        // Vote.Commitment
-    inputs_hasher.in[i] <== nullifier; i++;         // Vote.Nullifier
     for (var f = 0; f < n_fields; f++) {
         inputs_hasher.in[i] <== cipherfields[f][0][0]; i++; // Vote.Ballot
         inputs_hasher.in[i] <== cipherfields[f][0][1]; i++; // Vote.Ballot
@@ -100,14 +94,4 @@ template BallotProof(n_fields) {
     ballotCipher.mask <== ballotProtocol.mask;
     ballotCipher.cipherfields <== cipherfields;
     ballotCipher.valid_fields === max_count;
-    // 3. Check the commitment and nullifier
-    component commitmentHash = Poseidon(3);
-    commitmentHash.inputs[0] <== address;
-    commitmentHash.inputs[1] <== process_id;
-    commitmentHash.inputs[2] <== secret;
-    commitmentHash.out === commitment;
-    component nullifierHash = Poseidon(2);
-    nullifierHash.inputs[0] <== commitment;
-    nullifierHash.inputs[1] <== secret;
-    nullifierHash.out === nullifier;
 }

@@ -9,7 +9,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/iden3/go-iden3-crypto/poseidon"
 	"github.com/vocdoni/z-ircuits/utils"
 	"go.vocdoni.io/dvote/crypto/ethereum"
 	"go.vocdoni.io/dvote/util"
@@ -41,12 +40,11 @@ func TestBallotProof(t *testing.T) {
 		minValue        = 0
 		costExp         = 2
 		forceUniqueness = 1
-		weight          = 0
+		weight          = 1
 		costFromWeight  = 0
 		// nullifier inputs
 		address   = acc.Address().Bytes()
 		processID = util.RandomBytes(20)
-		secret    = util.RandomBytes(16)
 		// circuit assets
 		wasmFile = "../artifacts/ballot_proof_test.wasm"
 		zkeyFile = "../artifacts/ballot_proof_test_pkey.zkey"
@@ -59,39 +57,7 @@ func TestBallotProof(t *testing.T) {
 		t.Errorf("Error generating random k: %v\n", err)
 		return
 	}
-	cipherfields := make([][][]string, n_fields)
-	for i := 0; i < n_fields; i++ {
-		if i < len(fields) {
-			c1, c2 := utils.Encrypt(fields[i], pubKey, k)
-			cipherfields[i] = [][]string{
-				{c1.X.String(), c1.Y.String()},
-				{c2.X.String(), c2.Y.String()},
-			}
-		} else {
-			cipherfields[i] = [][]string{
-				{"0", "0"},
-				{"0", "0"},
-			}
-		}
-	}
-	// generate the nullifier
-	commitment, err := poseidon.Hash([]*big.Int{
-		util.BigToFF(new(big.Int).SetBytes(address)),
-		util.BigToFF(new(big.Int).SetBytes(processID)),
-		util.BigToFF(new(big.Int).SetBytes(secret)),
-	})
-	if err != nil {
-		log.Fatalf("Error hashing: %v\n", err)
-		return
-	}
-	nullifier, err := poseidon.Hash([]*big.Int{
-		commitment,
-		util.BigToFF(new(big.Int).SetBytes(secret)),
-	})
-	if err != nil {
-		log.Fatalf("Error hashing: %v\n", err)
-		return
-	}
+	cipherfields, _ := utils.CipherBallotFields(fields, n_fields, pubKey, k)
 	// circuit inputs
 	inputs := map[string]any{
 		"fields":           utils.BigIntArrayToStringArray(fields, n_fields),
@@ -107,9 +73,8 @@ func TestBallotProof(t *testing.T) {
 		"pk":               []string{pubKey.X.String(), pubKey.Y.String()},
 		"k":                k.String(),
 		"cipherfields":     cipherfields,
-		"nullifier":        nullifier.String(),
-		"commitment":       commitment.String(),
-		"secret":           util.BigToFF(new(big.Int).SetBytes(secret)).String(),
+		"address":          util.BigToFF(new(big.Int).SetBytes(address)).String(),
+		"process_id":       util.BigToFF(new(big.Int).SetBytes(processID)).String(),
 	}
 	bInputs, _ := json.MarshalIndent(inputs, "  ", "  ")
 	t.Log("Inputs:", string(bInputs))

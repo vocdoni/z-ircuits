@@ -28,10 +28,6 @@ template BallotProof(n_fields) {
     signal input pk[2];                         // public
     signal input k;                             // private
     signal input cipherfields[n_fields][2][2];  // public
-    // Nullifier inputs
-    signal input nullifier;  // public
-    signal input commitment; // private
-    signal input secret;     // private
     // 1. Check the vote meets the ballot requirements
     component ballotProtocol = BallotChecker(n_fields);
     ballotProtocol.fields <== fields;
@@ -52,14 +48,4 @@ template BallotProof(n_fields) {
     ballotCipher.mask <== ballotProtocol.mask;
     ballotCipher.cipherfields <== cipherfields;
     ballotCipher.valid_fields === max_count;
-    // 3. Check the commitment and nullifier
-    component commitmentHash = Poseidon(3);
-    commitmentHash.inputs[0] <== address;
-    commitmentHash.inputs[1] <== process_id;
-    commitmentHash.inputs[2] <== secret;
-    commitmentHash.out === commitment;
-    component nullifierHash = Poseidon(2);
-    nullifierHash.inputs[0] <== commitment;
-    nullifierHash.inputs[1] <== secret;
-    nullifierHash.out === nullifier;
 }

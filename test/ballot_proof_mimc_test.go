@@ -27,6 +27,8 @@ func TestBallotProofMiMC(t *testing.T) {
 		return
 	}
 	var (
+		address   = acc.Address().Bytes()
+		processID = util.RandomBytes(20)
 		// ballot inputs
 		n_fields        = 8
 		maxCount        = 5
@@ -37,10 +39,6 @@ func TestBallotProofMiMC(t *testing.T) {
 		costExp         = 2
 		costFromWeight  = 0
 		weight          = 0
-		// nullifier inputs
-		address   = acc.Address().Bytes()
-		processID = util.RandomBytes(20)
-		secret    = util.RandomBytes(16)
 		// circuit assets
 		wasmFile = "../artifacts/ballot_proof_mimc_test.wasm"
 		zkeyFile = "../artifacts/ballot_proof_mimc_test_pkey.zkey"
@@ -55,12 +53,6 @@ func TestBallotProofMiMC(t *testing.T) {
 	}
 	// encrypt ballot fields and get them in plain format
 	cipherfields, plainCipherfields := utils.CipherBallotFields(fields, n_fields, pubKey, k)
-	// generate the nullifier
-	commitment, nullifier, err := utils.MockedCommitmentAndNullifier(address, processID, secret)
-	if err != nil {
-		log.Fatalf("Error hashing: %v\n", err)
-		return
-	}
 	bigInputs := []*big.Int{
 		util.BigToFF(new(big.Int).SetBytes(processID)),
 		big.NewInt(int64(maxCount)),
@@ -74,8 +66,6 @@ func TestBallotProofMiMC(t *testing.T) {
 		pubKey.X,
 		pubKey.Y,
 		util.BigToFF(new(big.Int).SetBytes(address)),
-		commitment,
-		nullifier,
 	}
 	bigInputs = append(bigInputs, plainCipherfields...)
 	bigInputs = append(bigInputs, big.NewInt(int64(weight)))
@@ -101,9 +91,6 @@ func TestBallotProofMiMC(t *testing.T) {
 		"pk":               []string{pubKey.X.String(), pubKey.Y.String()},
 		"k":                k.String(),
 		"cipherfields":     cipherfields,
-		"nullifier":        nullifier.String(),
-		"commitment":       commitment.String(),
-		"secret":           util.BigToFF(new(big.Int).SetBytes(secret)).String(),
 		"inputs_hash":      inputsHash.String(),
 	}
 	bInputs, _ := json.MarshalIndent(inputs, "  ", "  ")

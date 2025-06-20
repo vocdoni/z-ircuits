@@ -1,4 +1,4 @@
-import { bigIntToField, hexToField, strToBigInt, hash, encrypt, prove, verify } from './utils';
+import { encrypt, prove, verify } from './utils';
 
 (async () => {
     const wasm = "../../artifacts/ballot_proof_test.wasm";
@@ -27,16 +27,6 @@ import { bigIntToField, hexToField, strToBigInt, hash, encrypt, prove, verify } 
     // compute nullifier
     const address = "0x6Db989fbe7b1308cc59A27f021e2E3de9422CF0A";
     const process_id = "0xf16236a51F11c0Bf97180eB16694e3A345E42506";
-    const secret = "super-secret-mnemonic-phrase";
-    const commitment = hash([
-        hexToField(address),
-        hexToField(process_id),
-        bigIntToField(strToBigInt(secret)),
-    ]);
-    const nullifier = hash([
-        commitment,
-        bigIntToField(strToBigInt(secret)),
-    ]);
     // init inputs
     const inputs = {
         fields,
@@ -52,9 +42,8 @@ import { bigIntToField, hexToField, strToBigInt, hash, encrypt, prove, verify } 
         pk: pubKey,
         k,
         cipherfields,
-        nullifier,
-        commitment,
-        secret: bigIntToField(strToBigInt(secret)),
+        address,
+        process_id,
     };
     console.log("inputs", inputs);
     // generate proof
