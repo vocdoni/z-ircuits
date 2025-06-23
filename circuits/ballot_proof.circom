@@ -3,6 +3,7 @@ pragma circom 2.1.0;
 include "poseidon.circom";
 include "./ballot_checker.circom";
 include "./ballot_cipher.circom";
+include "./lib/vote_id.circom";
 
 // BallotProof is the circuit to prove a valid vote in the Vocdoni scheme. The 
 // vote is valid if it meets the Ballot Protocol requirements, but also if the
@@ -21,9 +22,10 @@ template BallotProof(n_fields) {
     signal input min_total_cost;    // public
     signal input cost_exp;          // public
     signal input cost_from_weight;  // public
-    signal input address;
-    signal input weight;
-    signal input process_id;
+    signal input address;           // public
+    signal input weight;            // public
+    signal input process_id;        // public
+    signal input vote_id;           // public
     // ElGamal inputs
     signal input pk[2];                         // public
     signal input k;                             // private
@@ -48,4 +50,11 @@ template BallotProof(n_fields) {
     ballotCipher.mask <== ballotProtocol.mask;
     ballotCipher.cipherfields <== cipherfields;
     ballotCipher.valid_fields === max_count;
+    // 3. Check the vote ID
+    component voteIDChecker = VoteIDChecker();
+    voteIDChecker.process_id <== process_id;
+    voteIDChecker.address <== address;
+    voteIDChecker.k <== k;
+    voteIDChecker.vote_id <== vote_id;
+
 }

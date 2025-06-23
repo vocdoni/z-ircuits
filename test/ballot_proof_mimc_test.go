@@ -51,10 +51,18 @@ func TestBallotProofMiMC(t *testing.T) {
 		t.Errorf("Error generating random k: %v\n", err)
 		return
 	}
+	// generate vote ID
+	bigPID := util.BigToFF(new(big.Int).SetBytes(processID))
+	bigAddr := util.BigToFF(new(big.Int).SetBytes(address))
+	voteID, err := utils.VoteID(bigPID, bigAddr, k)
+	if err != nil {
+		t.Errorf("Error generating vote ID: %v\n", err)
+		return
+	}
 	// encrypt ballot fields and get them in plain format
 	cipherfields, plainCipherfields := utils.CipherBallotFields(fields, n_fields, pubKey, k)
 	bigInputs := []*big.Int{
-		util.BigToFF(new(big.Int).SetBytes(processID)),
+		bigPID,
 		big.NewInt(int64(maxCount)),
 		big.NewInt(int64(forceUniqueness)),
 		big.NewInt(int64(maxValue)),
@@ -65,7 +73,8 @@ func TestBallotProofMiMC(t *testing.T) {
 		big.NewInt(int64(costFromWeight)),
 		pubKey.X,
 		pubKey.Y,
-		util.BigToFF(new(big.Int).SetBytes(address)),
+		bigAddr,
+		voteID,
 	}
 	bigInputs = append(bigInputs, plainCipherfields...)
 	bigInputs = append(bigInputs, big.NewInt(int64(weight)))
@@ -85,9 +94,10 @@ func TestBallotProofMiMC(t *testing.T) {
 		"min_total_cost":   fmt.Sprint(maxCount),
 		"cost_exp":         fmt.Sprint(costExp),
 		"cost_from_weight": fmt.Sprint(costFromWeight),
-		"address":          util.BigToFF(new(big.Int).SetBytes(address)).String(),
+		"address":          bigAddr.String(),
 		"weight":           fmt.Sprint(weight),
-		"process_id":       util.BigToFF(new(big.Int).SetBytes(processID)).String(),
+		"process_id":       bigPID.String(),
+		"vote_id":          voteID.String(),
 		"pk":               []string{pubKey.X.String(), pubKey.Y.String()},
 		"k":                k.String(),
 		"cipherfields":     cipherfields,
@@ -114,11 +124,11 @@ func TestBallotProofMiMC(t *testing.T) {
 	}
 	log.Println("Proof verified")
 	if persist {
-		if err := os.WriteFile(fmt.Sprintf("./%s_proof.json", testID), []byte(proofData), 0644); err != nil {
+		if err := os.WriteFile(fmt.Sprintf("./%s_proof.json", testID), []byte(proofData), 0o644); err != nil {
 			t.Errorf("Error writing proof file: %v\n", err)
 			return
 		}
-		if err := os.WriteFile(fmt.Sprintf("./%s_pub_signals.json", testID), []byte(pubSignals), 0644); err != nil {
+		if err := os.WriteFile(fmt.Sprintf("./%s_pub_signals.json", testID), []byte(pubSignals), 0o644); err != nil {
 			t.Errorf("Error writing public signals file: %v\n", err)
 			return
 		}

@@ -58,6 +58,13 @@ func TestBallotProof(t *testing.T) {
 		return
 	}
 	cipherfields, _ := utils.CipherBallotFields(fields, n_fields, pubKey, k)
+	bigPID := util.BigToFF(new(big.Int).SetBytes(processID))
+	bigAddr := util.BigToFF(new(big.Int).SetBytes(address))
+	voteID, err := utils.VoteID(bigPID, bigAddr, k)
+	if err != nil {
+		t.Errorf("Error generating vote ID: %v\n", err)
+		return
+	}
 	// circuit inputs
 	inputs := map[string]any{
 		"fields":           utils.BigIntArrayToStringArray(fields, n_fields),
@@ -73,8 +80,9 @@ func TestBallotProof(t *testing.T) {
 		"pk":               []string{pubKey.X.String(), pubKey.Y.String()},
 		"k":                k.String(),
 		"cipherfields":     cipherfields,
-		"address":          util.BigToFF(new(big.Int).SetBytes(address)).String(),
-		"process_id":       util.BigToFF(new(big.Int).SetBytes(processID)).String(),
+		"address":          bigAddr.String(),
+		"process_id":       bigPID.String(),
+		"vote_id":          voteID.String(),
 	}
 	bInputs, _ := json.MarshalIndent(inputs, "  ", "  ")
 	t.Log("Inputs:", string(bInputs))
@@ -97,11 +105,11 @@ func TestBallotProof(t *testing.T) {
 	}
 	log.Println("Proof verified")
 	if persist {
-		if err := os.WriteFile(fmt.Sprintf("./%s_proof.json", testID), []byte(proofData), 0644); err != nil {
+		if err := os.WriteFile(fmt.Sprintf("./%s_proof.json", testID), []byte(proofData), 0o644); err != nil {
 			t.Errorf("Error writing proof file: %v\n", err)
 			return
 		}
-		if err := os.WriteFile(fmt.Sprintf("./%s_pub_signals.json", testID), []byte(pubSignals), 0644); err != nil {
+		if err := os.WriteFile(fmt.Sprintf("./%s_pub_signals.json", testID), []byte(pubSignals), 0o644); err != nil {
 			t.Errorf("Error writing public signals file: %v\n", err)
 			return
 		}

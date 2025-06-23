@@ -4,6 +4,7 @@ include "poseidon.circom";
 include "mimc.circom";
 include "./ballot_checker.circom";
 include "./ballot_cipher.circom";
+include "./lib/vote_id.circom";
 
 // BallotProof is the circuit to prove a valid vote in the Vocdoni scheme. The 
 // vote is valid if it meets the Ballot Protocol requirements, but also if the
@@ -25,6 +26,7 @@ template BallotProof(n_fields) {
     signal input address;
     signal input weight;
     signal input process_id;
+    signal input vote_id;
     // ElGamal inputs
     signal input pk[2];
     signal input k;
@@ -43,12 +45,11 @@ template BallotProof(n_fields) {
     //      - cost_exp
     //      - cost_from_weight
     //  c. Public encryption key (pk[2])
-    //  d. Nullifier
-    //  e. Cipherfields[n_fields][2][2]
-    //  f. Address
-    //  g. Commitment
-    //  h. Weight
-    var static_inputs = 13; // including 2 of the pk
+    //  d. Address
+    //  e. VoteID
+    //  f. Cipherfields[n_fields][2][2]
+    //  g. Weight
+    var static_inputs = 14; // including 2 of the pk
     var cipherfields_inputs = 4 * n_fields;
     var n_inputs = cipherfields_inputs + static_inputs;
     component inputs_hasher = MultiMiMC7(n_inputs, 91);
@@ -66,6 +67,7 @@ template BallotProof(n_fields) {
     inputs_hasher.in[i] <== pk[0]; i++;             // Process.EncryptionKey
     inputs_hasher.in[i] <== pk[1]; i++;             // Process.EncryptionKey
     inputs_hasher.in[i] <== address; i++;           // Vote.Address
+    inputs_hasher.in[i] <== vote_id; i++;           // Vote.ID
     for (var f = 0; f < n_fields; f++) {
         inputs_hasher.in[i] <== cipherfields[f][0][0]; i++; // Vote.Ballot
         inputs_hasher.in[i] <== cipherfields[f][0][1]; i++; // Vote.Ballot
@@ -94,4 +96,10 @@ template BallotProof(n_fields) {
     ballotCipher.mask <== ballotProtocol.mask;
     ballotCipher.cipherfields <== cipherfields;
     ballotCipher.valid_fields === max_count;
+    // 3. Check the vote ID
+    component voteIDChecker = VoteIDChecker();
+    voteIDChecker.process_id <== process_id;
+    voteIDChecker.address <== address;
+    voteIDChecker.k <== k;
+    voteIDChecker.vote_id <== vote_id;
 }

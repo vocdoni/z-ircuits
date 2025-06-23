@@ -6,7 +6,9 @@ import (
 	"math/big"
 
 	"github.com/iden3/go-iden3-crypto/babyjub"
+	"github.com/iden3/go-iden3-crypto/mimc7"
 	"github.com/iden3/go-iden3-crypto/poseidon"
+	"go.vocdoni.io/dvote/util"
 )
 
 func BigIntArrayToN(arr []*big.Int, n int) []*big.Int {
@@ -76,4 +78,12 @@ func MultiPoseidon(inputs ...*big.Int) (*big.Int, error) {
 	}
 	// return the hash of all chunk hashes
 	return poseidon.Hash(hashes)
+}
+
+func VoteID(bigPID, bigAddr, k *big.Int) (*big.Int, error) {
+	return mimc7.Hash([]*big.Int{
+		util.BigToFF(bigPID),
+		util.BigToFF(bigAddr),
+		util.BigToFF(k),
+	}, nil)
 }
