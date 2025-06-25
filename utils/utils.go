@@ -81,9 +81,19 @@ func MultiPoseidon(inputs ...*big.Int) (*big.Int, error) {
 }
 
 func VoteID(bigPID, bigAddr, k *big.Int) (*big.Int, error) {
-	return mimc7.Hash([]*big.Int{
+	hash, err := mimc7.Hash([]*big.Int{
 		util.BigToFF(bigPID),
 		util.BigToFF(bigAddr),
 		util.BigToFF(k),
 	}, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate vote ID: %v", err)
+	}
+	return TruncateTo160Bits(hash), nil
+}
+
+func TruncateTo160Bits(input *big.Int) *big.Int {
+	mask := new(big.Int).Lsh(big.NewInt(1), 160) // 1 << 160
+	mask.Sub(mask, big.NewInt(1))                // (1 << 160) - 1
+	return new(big.Int).And(input, mask)         // input & ((1<<160)-1)
 }
