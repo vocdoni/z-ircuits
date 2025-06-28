@@ -36,7 +36,7 @@ func TestBallotProof(t *testing.T) {
 		}
 		n_fields        = 8
 		maxCount        = 5
-		maxValue        = 16 + 1
+		maxValue        = 16
 		minValue        = 0
 		costExp         = 2
 		forceUniqueness = 1

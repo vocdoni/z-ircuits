@@ -6,10 +6,10 @@ import { prove, verify } from './utils';
     const vk = "../../artifacts/ballot_checker_test_vkey.json";
     // init inputs
     const inputs = {
-        fields: [ 1, 2, 3, 4, 5 ],
+        fields: [ 1, 2, 3, 4, 5, 0, 0, 0 ],
         max_count: 5,
         force_uniqueness: 1,
-        max_value: 5 + 1,
+        max_value: 5,
         min_value: 0,
         max_total_cost: 56,
         min_total_cost: 5,

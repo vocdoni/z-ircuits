@@ -36,6 +36,7 @@ template UniqueArray(n) {
     }
 }
 
+// Ensures that every active element of arr lies in the inclusive interval [min, max].
 template ArrayInBounds(n) {
     signal input arr[n];
     signal input mask[n]; // if mask[i] is 1, then enforce bounds, otherwise do nothing
@@ -48,12 +49,12 @@ template ArrayInBounds(n) {
         // enforce each element is in bounds
         lt[i] = GreaterThan(252);
         lt[i].in[0] <== arr[i];
-        lt[i].in[1] <== max + 1;
+        lt[i].in[1] <== max;           // inclusive upper bound
         lt[i].out * mask[i] === 0;
 
         gt[i] = LessThan(252);
         gt[i].in[0] <== arr[i];
-        gt[i].in[1] <== min - 1;
+        gt[i].in[1] <== min;           // inclusive lower bound
         gt[i].out * mask[i] === 0;
     }
 }

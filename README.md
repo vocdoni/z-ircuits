@@ -96,7 +96,13 @@ To test the circuits, first they should be compiled to generate the wasm, the pr
     sh prepare-circuit.sh test/ballot_proof_poseidon_test.circom
     ```
 
-## Circuit testubg execution
+* **Compile and prepare all**
+
+    ```sh
+    sh prepare-circuit.sh all
+    ```
+
+## Circuit testing execution
 
 The circuits execution (proof generation and verification) can be done using `golang` or `typescript`:
 
