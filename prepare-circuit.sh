@@ -46,25 +46,32 @@ fi
 # install circomlib
 npm install circomlib
 
-# compile the circuit
-circom $CIRCUIT --r1cs --wasm --sym -o $ARTIFACTS_DIR -l ./node_modules/circomlib/circuits
+[ "$CIRCUIT" == "all" ] && {
+  CIRCUIT=$(find test -name "*.circom")
+}
 
-# check if ptau file exists, if not download it from https://pse-trusted-setup-ppot.s3.eu-central-1.amazonaws.com/pot28_0080/ppot_0080_20.ptau
-if [ ! -f "$ARTIFACTS_DIR/ptau" ]; then
-    echo "Downloading ptau file..."
-    wget https://pse-trusted-setup-ppot.s3.eu-central-1.amazonaws.com/pot28_0080/ppot_0080_18.ptau -O $ARTIFACTS_DIR/ptau
-fi
-
-# generate the trusted setup
-NAME=$(basename $CIRCUIT .circom)
-R1CS=$ARTIFACTS_DIR/$NAME.r1cs
-snarkjs groth16 setup $R1CS $ARTIFACTS_DIR/ptau $ARTIFACTS_DIR/$NAME\_pkey.zkey
-
-# export the verification key
-snarkjs zkey export verificationkey $ARTIFACTS_DIR/$NAME\_pkey.zkey $ARTIFACTS_DIR/$NAME\_vkey.json
-
-# mv wasm from $ARTIFACTS/$NAME_js/$NAME.wasm to $ARTIFACTS/$NAME.wasm
-mv $ARTIFACTS_DIR/$NAME\_js/$NAME.wasm $ARTIFACTS_DIR/$NAME.wasm
-
+for C in $CIRCUIT; do
+  # compile the circuit
+  echo "=> Compiling circuit $C"
+  circom $C --r1cs --wasm --sym -o $ARTIFACTS_DIR -l ./node_modules/circomlib/circuits
+  
+  # check if ptau file exists, if not download it from https://pse-trusted-setup-ppot.s3.eu-central-1.amazonaws.com/pot28_0080/ppot_0080_20.ptau
+  if [ ! -f "$ARTIFACTS_DIR/ptau" ]; then
+      echo "Downloading ptau file..."
+      wget https://pse-trusted-setup-ppot.s3.eu-central-1.amazonaws.com/pot28_0080/ppot_0080_18.ptau -O $ARTIFACTS_DIR/ptau
+  fi
+  
+  # generate the trusted setup
+  NAME=$(basename $C .circom)
+  R1CS=$ARTIFACTS_DIR/$NAME.r1cs
+  snarkjs groth16 setup $R1CS $ARTIFACTS_DIR/ptau $ARTIFACTS_DIR/$NAME\_pkey.zkey
+  
+  # export the verification key
+  snarkjs zkey export verificationkey $ARTIFACTS_DIR/$NAME\_pkey.zkey $ARTIFACTS_DIR/$NAME\_vkey.json
+  
+  # mv wasm from $ARTIFACTS/$NAME_js/$NAME.wasm to $ARTIFACTS/$NAME.wasm
+  mv $ARTIFACTS_DIR/$NAME\_js/$NAME.wasm $ARTIFACTS_DIR/$NAME.wasm
+done
+  
 # clean up
 rm -rf ./node_modules package-lock.json package.json $ARTIFACTS_DIR/$NAME\_js

@@ -31,7 +31,7 @@ template BallotChecker(n_fields) {
     inBounds.arr <== fields;
     inBounds.mask <== mask;
     inBounds.min <== min_value;
-    inBounds.max <== max_value+1;
+    inBounds.max <== max_value;
     // compute total cost: sum of all fields to the power of cost_exp
     signal total_cost;
     component sum_calc = SumPow(n_fields, 128);
@@ -51,7 +51,7 @@ template BallotChecker(n_fields) {
     mux.b <== weight;
     mux.sel <== cost_from_weight;
     // check bounds of total_cost with min_total_cost and mux output
-    component lt = LessThan(128);
+    component lt = LessEqThan(128);
     lt.in[0] <== total_cost;
     lt.in[1] <== mux.out;
     // lt.out === 1;
