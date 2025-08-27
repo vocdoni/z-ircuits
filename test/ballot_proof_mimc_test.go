@@ -85,23 +85,23 @@ func TestBallotProofMiMC(t *testing.T) {
 	}
 	// circuit inputs
 	inputs := map[string]any{
-		"fields":           utils.BigIntArrayToStringArray(fields, n_fields),
-		"max_count":        fmt.Sprint(maxCount),
-		"force_uniqueness": fmt.Sprint(forceUniqueness),
-		"max_value":        fmt.Sprint(maxValue),
-		"min_value":        fmt.Sprint(minValue),
-		"max_total_cost":   fmt.Sprint(int(math.Pow(float64(maxValue), float64(costExp))) * maxCount), // (maxValue-1)^costExp * maxCount
-		"min_total_cost":   fmt.Sprint(maxCount),
-		"cost_exp":         fmt.Sprint(costExp),
-		"cost_from_weight": fmt.Sprint(costFromWeight),
-		"address":          bigAddr.String(),
-		"weight":           fmt.Sprint(weight),
-		"process_id":       bigPID.String(),
-		"vote_id":          voteID.String(),
-		"pk":               []string{pubKey.X.String(), pubKey.Y.String()},
-		"k":                k.String(),
-		"cipherfields":     cipherfields,
-		"inputs_hash":      inputsHash.String(),
+		"fields":            utils.BigIntArrayToStringArray(fields, n_fields),
+		"num_fields":        fmt.Sprint(maxCount),
+		"unique_values":     fmt.Sprint(forceUniqueness),
+		"max_value":         fmt.Sprint(maxValue),
+		"min_value":         fmt.Sprint(minValue),
+		"max_value_sum":     fmt.Sprint(int(math.Pow(float64(maxValue), float64(costExp))) * maxCount), // (maxValue-1)^costExp * maxCount
+		"min_value_sum":     fmt.Sprint(maxCount),
+		"cost_exponent":     fmt.Sprint(costExp),
+		"cost_from_weight":  fmt.Sprint(costFromWeight),
+		"address":           bigAddr.String(),
+		"weight":            fmt.Sprint(weight),
+		"process_id":        bigPID.String(),
+		"vote_id":           voteID.String(),
+		"encryption_pubkey": []string{pubKey.X.String(), pubKey.Y.String()},
+		"k":                 k.String(),
+		"cipherfields":      cipherfields,
+		"inputs_hash":       inputsHash.String(),
 	}
 	bInputs, _ := json.MarshalIndent(inputs, "  ", "  ")
 	t.Log("Inputs:", string(bInputs))

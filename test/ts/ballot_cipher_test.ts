@@ -13,7 +13,7 @@ import { encrypt, prove, verify } from './utils';
     const msg : bigint = BigInt("3");
     const [c1, c2] = encrypt(msg, pubKey, k);
     // init inputs
-    const inputs = { pk: pubKey, msg, k, c1, c2 };
+    const inputs = { encryption_pubkey: pubKey, msg, k, c1, c2 };
     console.log("inputs", inputs);
     // generate proof
     const [proof, publicSignals] = await prove(inputs, wasm, pk);

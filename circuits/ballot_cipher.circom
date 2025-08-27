@@ -28,7 +28,7 @@ template FieldComparator() {
 }
 
 template BallotCipher(n_fields) {
-    signal input pk[2];
+    signal input encryption_pubkey[2];
     signal input k;
     signal input fields[n_fields];
     signal input mask[n_fields];
@@ -57,7 +57,7 @@ template BallotCipher(n_fields) {
     // number of valid fields.
     for (var i = 0; i < n_fields; i++) {
         ciphers[i] = ElGamal();
-        ciphers[i].pk <== pk;
+        ciphers[i].encryption_pubkey <== encryption_pubkey;
         ciphers[i].msg <== fields[i];
         ciphers[i].k <== ks[i+1];
         // compare the encrypted fields

@@ -28,11 +28,11 @@ func TestBallotCipher(t *testing.T) {
 	msg := big.NewInt(3)
 	c1, c2 := utils.Encrypt(msg, pubKey, k)
 	inputs := map[string]any{
-		"pk":  []string{pubKey.X.String(), pubKey.Y.String()},
-		"k":   k.String(),
-		"msg": msg.String(),
-		"c1":  []string{c1.X.String(), c1.Y.String()},
-		"c2":  []string{c2.X.String(), c2.Y.String()},
+		"encryption_pubkey": []string{pubKey.X.String(), pubKey.Y.String()},
+		"k":                 k.String(),
+		"msg":               msg.String(),
+		"c1":                []string{c1.X.String(), c1.Y.String()},
+		"c2":                []string{c2.X.String(), c2.Y.String()},
 	}
 	bInputs, _ := json.MarshalIndent(inputs, "  ", "  ")
 	t.Log("Inputs:", string(bInputs))

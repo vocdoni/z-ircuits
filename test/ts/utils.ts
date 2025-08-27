@@ -1,5 +1,6 @@
 import fs from 'fs';
 import * as snarkjs from 'snarkjs';
+import { buildMimc7 } from 'circomlibjs';
 import * as pkg from "@iden3/js-crypto";
 const { babyJub, poseidon } = pkg;
 
@@ -83,4 +84,19 @@ export function encrypt(message: bigint, pubKey: [bigint, bigint], k: bigint): [
     // c2 = m + s
     const c2 = babyJub.addPoint(m, s);
     return [c1, c2];
+}
+
+export async function voteId(pid: bigint, address: bigint, k: bigint): Promise<bigint> {
+    const hash = await buildMimc7();
+    return u8ToBigInt(hash.multiHash([pid, address, k]));
+}
+
+function u8ToBigInt(bytes: Uint8Array): bigint {
+    // Convert bytes into hex string
+    const hex = Array.from(bytes, b => b.toString(16).padStart(2, "0")).join("");
+    // Convert hex to BigInt
+    let n = BigInt("0x" + hex);
+    // Shift all numbers to right and xor if the first bit was signed
+    n = (n >> 1n) ^ (n & 1n ? -1n : 0n);
+    return n;
 }

@@ -35,7 +35,7 @@ func TestBallotProof(t *testing.T) {
 			big.NewInt(1),
 		}
 		n_fields        = 8
-		maxCount        = 5
+		numFields       = 5
 		maxValue        = 16
 		minValue        = 0
 		costExp         = 2
@@ -67,22 +67,22 @@ func TestBallotProof(t *testing.T) {
 	}
 	// circuit inputs
 	inputs := map[string]any{
-		"fields":           utils.BigIntArrayToStringArray(fields, n_fields),
-		"max_count":        fmt.Sprint(maxCount),
-		"force_uniqueness": fmt.Sprint(forceUniqueness),
-		"max_value":        fmt.Sprint(maxValue),
-		"min_value":        fmt.Sprint(minValue),
-		"cost_exp":         fmt.Sprint(costExp),
-		"max_total_cost":   fmt.Sprint(int(math.Pow(float64(maxValue-1), float64(costExp))) * maxCount), // (maxValue-1)^costExp * maxCount
-		"min_total_cost":   fmt.Sprint(maxCount),
-		"cost_from_weight": fmt.Sprint(costFromWeight),
-		"weight":           fmt.Sprint(weight),
-		"pk":               []string{pubKey.X.String(), pubKey.Y.String()},
-		"k":                k.String(),
-		"cipherfields":     cipherfields,
-		"address":          bigAddr.String(),
-		"process_id":       bigPID.String(),
-		"vote_id":          voteID.String(),
+		"fields":            utils.BigIntArrayToStringArray(fields, n_fields),
+		"num_fields":        fmt.Sprint(numFields),
+		"unique_values":     fmt.Sprint(forceUniqueness),
+		"max_value":         fmt.Sprint(maxValue),
+		"min_value":         fmt.Sprint(minValue),
+		"cost_exponent":     fmt.Sprint(costExp),
+		"max_value_sum":     fmt.Sprint(int(math.Pow(float64(maxValue-1), float64(costExp))) * numFields), // (maxValue-1)^costExp * maxCount
+		"min_value_sum":     fmt.Sprint(numFields),
+		"cost_from_weight":  fmt.Sprint(costFromWeight),
+		"weight":            fmt.Sprint(weight),
+		"encryption_pubkey": []string{pubKey.X.String(), pubKey.Y.String()},
+		"k":                 k.String(),
+		"cipherfields":      cipherfields,
+		"address":           bigAddr.String(),
+		"process_id":        bigPID.String(),
+		"vote_id":           voteID.String(),
 	}
 	bInputs, _ := json.MarshalIndent(inputs, "  ", "  ")
 	t.Log("Inputs:", string(bInputs))

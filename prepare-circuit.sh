@@ -23,9 +23,11 @@ fi
 
 # check if cargo is installed
 if [ ! command -v cargo &> /dev/null ]; then
-    echo "npm is not installed"
+    echo "rust is not installed"
     exit 1
 fi
+
+echo '{"name": "davinci-circom-circuits"}' > ./package.json
 
 # check if circom is installed
 if [ ! command -v circom --version &> /dev/null ]; then

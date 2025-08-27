@@ -7,7 +7,7 @@ include "escalarmulany.circom";
 include "escalarmulfix.circom";
 
 template ElGamal() {
-    signal input pk[2]; // [pub] public key
+    signal input encryption_pubkey[2]; // [pub] public key
     signal input msg;   // [priv] message to encrypt
     signal input k;     // [priv] random number
 
@@ -15,14 +15,14 @@ template ElGamal() {
     signal output c2[2]; // second point of the ciphertext
 
     // ensure that public key is on the curve
-    component pkCheck = BabyCheck();
-    pkCheck.x <== pk[0];
-    pkCheck.y <== pk[1];
+    component encryptionPubkeyCheck = BabyCheck();
+    encryptionPubkeyCheck.x <== encryption_pubkey[0];
+    encryptionPubkeyCheck.y <== encryption_pubkey[1];
     // ensure that the public key is not the identity point (0, 1)
     component isz = IsZero();
-    isz.in <== pk[0];
+    isz.in <== encryption_pubkey[0];
     component ise = IsEqual();
-    ise.in[0] <== pk[1];
+    ise.in[0] <== encryption_pubkey[1];
     ise.in[1] <== 1;
     isz.out + ise.out === 0;
     // babyjubjub base point
@@ -46,10 +46,10 @@ template ElGamal() {
     for (var i=0; i<k_bits; i++) {
         kBits.out[i] ==> c1Point.e[i];
     }
-    // s = k * pk (escalarMulAny)
+    // s = k * encryption_pubkey (escalarMulAny)
     component sPoint = EscalarMulAny(k_bits);
-    sPoint.p[0] <== pk[0];
-    sPoint.p[1] <== pk[1];
+    sPoint.p[0] <== encryption_pubkey[0];
+    sPoint.p[1] <== encryption_pubkey[1];
     for (var i=0; i<k_bits; i++) {
         kBits.out[i] ==> sPoint.e[i];
     }

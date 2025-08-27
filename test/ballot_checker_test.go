@@ -235,13 +235,13 @@ func TestBallotChecker(t *testing.T) {
 
 			inputs := map[string]any{
 				"fields":           ballotToStrings(padded),
-				"max_count":        strconv.Itoa(tc.maxCount),
-				"force_uniqueness": uniq,
+				"num_fields":       strconv.Itoa(tc.maxCount),
+				"unique_values":    uniq,
 				"max_value":        strconv.Itoa(tc.maxValue),
 				"min_value":        strconv.Itoa(tc.minValue),
-				"max_total_cost":   strconv.Itoa(tc.maxTotalCost),
-				"min_total_cost":   strconv.Itoa(tc.minTotalCost),
-				"cost_exp":         strconv.Itoa(tc.costExp),
+				"max_value_sum":    strconv.Itoa(tc.maxTotalCost),
+				"min_value_sum":    strconv.Itoa(tc.minTotalCost),
+				"cost_exponent":    strconv.Itoa(tc.costExp),
 				"weight":           "0",
 				"cost_from_weight": "0",
 			}

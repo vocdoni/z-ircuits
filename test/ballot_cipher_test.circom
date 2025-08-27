@@ -3,7 +3,7 @@ pragma circom 2.1.0;
 include "../circuits/ballot_cipher.circom";
 
 template BallotCipherTest() {
-    signal input pk[2]; // public key
+    signal input encryption_pubkey[2]; // public key
     signal input msg;   // message to encrypt
     signal input k;     // random number
     signal input c1[2]; // first part of the ciphertext
@@ -18,11 +18,11 @@ template BallotCipherTest() {
     mask[0] <== 1;
     // encrypt the message
     component cipher = BallotCipher(1);
-    cipher.pk <== pk;
+    cipher.encryption_pubkey <== encryption_pubkey;
     cipher.k <== k;
     cipher.fields <== fields;
     cipher.mask <== mask;
     cipher.cipherfields <== cipherfields;
 }
 
-component main{public [pk, msg, k, c1, c2]} = BallotCipherTest();
+component main{public [encryption_pubkey, msg, k, c1, c2]} = BallotCipherTest();

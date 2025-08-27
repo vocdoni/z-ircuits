@@ -14,42 +14,42 @@ include "./lib/vote_id.circom";
 template BallotProof(n_fields) {
     // Ballot inputs
     signal input fields[n_fields];  // private
-    signal input max_count;         // public
-    signal input force_uniqueness;  // public
+    signal input num_fields;        // public
+    signal input unique_values;      // public
     signal input max_value;         // public
     signal input min_value;         // public
-    signal input max_total_cost;    // public
-    signal input min_total_cost;    // public
-    signal input cost_exp;          // public
+    signal input max_value_sum;     // public
+    signal input min_value_sum;     // public
+    signal input cost_exponent;     // public
     signal input cost_from_weight;  // public
     signal input address;           // public
     signal input weight;            // public
     signal input process_id;        // public
     signal input vote_id;           // public
     // ElGamal inputs
-    signal input pk[2];                         // public
+    signal input encryption_pubkey[2];          // public
     signal input k;                             // private
     signal input cipherfields[n_fields][2][2];  // public
     // 1. Check the vote meets the ballot requirements
     component ballotProtocol = BallotChecker(n_fields);
     ballotProtocol.fields <== fields;
-    ballotProtocol.max_count <== max_count;
-    ballotProtocol.force_uniqueness <== force_uniqueness;
+    ballotProtocol.num_fields <== num_fields;
+    ballotProtocol.unique_values <== unique_values;
     ballotProtocol.max_value <== max_value;
     ballotProtocol.min_value <== min_value;
-    ballotProtocol.max_total_cost <== max_total_cost;
-    ballotProtocol.min_total_cost <== min_total_cost;
-    ballotProtocol.cost_exp <== cost_exp;
+    ballotProtocol.max_value_sum <== max_value_sum;
+    ballotProtocol.min_value_sum <== min_value_sum;
+    ballotProtocol.cost_exponent <== cost_exponent;
     ballotProtocol.cost_from_weight <== cost_from_weight;
     ballotProtocol.weight <== weight;
     // 2.  Check the encrypted vote
     component ballotCipher = BallotCipher(n_fields);
-    ballotCipher.pk <== pk;
+    ballotCipher.encryption_pubkey <== encryption_pubkey;
     ballotCipher.k <== k;
     ballotCipher.fields <== fields;
     ballotCipher.mask <== ballotProtocol.mask;
     ballotCipher.cipherfields <== cipherfields;
-    ballotCipher.valid_fields === max_count;
+    ballotCipher.valid_fields === num_fields;
     // 3. Check the vote ID
     component voteIDChecker = VoteIDChecker();
     voteIDChecker.process_id <== process_id;
