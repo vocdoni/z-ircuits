@@ -1,4 +1,4 @@
-# VocdoniZ Circom circuits
+# Davinci Circom Circuits
 
 This repository includes the templates that compose the zk-snark circuit that allows to prove a valid vote, including the format of the vote itself and its encryption:
  * **Ballot checker** ([`ballot_checker.circom`](./circuits/ballot_checker.circom)): Checks that the ballot is valid under the params provided as inputs.
