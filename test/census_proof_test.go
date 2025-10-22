@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	imtDepth       = 24
+	imtDepth       = 27
 	censusWasmFile = "../artifacts/census_proof_test.wasm"
 	censusZkeyFile = "../artifacts/census_proof_test_pkey.zkey"
 	censusVkeyFile = "../artifacts/census_proof_test_vkey.json"

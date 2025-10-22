@@ -62,15 +62,15 @@ This repository includes the templates that compose the zk-snark circuit that al
  * **Census proof (Lean IMT)** ([`census_proof.circom`](./circuits/census_proof.circom)): Verifies an inclusion proof of a Lean Incremental MerkleTree generated with [LeanIMT Go](https://github.com/vocdoni/lean-imt-go).
     ```
     template instances: 76
-    non-linear constraints: 5904
+    non-linear constraints: 6642
     linear constraints: 0
-    public inputs: 27
+    public inputs: 30
     private inputs: 0
     public outputs: 0
-    wires: 5930
-    labels: 18778
+    wires: 6671
+    labels: 21124
     ```
-    <small>For `maxDepth = 24`.</small>
+    <small>For `maxDepth = 27` (up to 100M of leaves).</small>
 
 ## Circuit compilation for testing 
 

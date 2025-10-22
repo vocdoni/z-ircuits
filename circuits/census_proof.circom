@@ -7,6 +7,7 @@ include "./lib/lean_imt.circom";
  *   - For 100k entries, maxDepth = 17, 
  *   - For 1M entries, maxDepth = 20
  *   - For 10M entries, maxDepth = 24, constrains = 5.9k
+ *   - For 100M entries, maxDepth = 27, constrains = 5.9k
  *   - ...
  * That means that the census proof provided will have as many siblings as the 
  * maxDepth.
