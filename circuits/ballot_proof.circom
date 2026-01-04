@@ -139,3 +139,5 @@ template BallotProof(n_fields) {
 
     inputs_hash === inputs_hasher.out;
 }
+
+component main {public [inputs_hash]} = BallotProof(8);

@@ -2,54 +2,54 @@ package test
 
 import (
 	"encoding/json"
-	"log"
 	"math/big"
 	"os"
 	"testing"
 
-	"github.com/vocdoni/z-ircuits/utils"
+	qt "github.com/frankban/quicktest"
+	"github.com/vocdoni/davinci-circom-circuits/test/testutils"
 )
 
 func TestBallotCipher(t *testing.T) {
-	var (
-		// circuit assets
-		wasmFile = "../artifacts/ballot_cipher_test.wasm"
-		zkeyFile = "../artifacts/ballot_cipher_test_pkey.zkey"
-		vkeyFile = "../artifacts/ballot_cipher_test_vkey.json"
-	)
+	c := qt.New(t)
+	// Get artifact paths
+	wasmPath, err := testutils.GetArtifactPath(testutils.BallotCipherWasm)
+	c.Assert(err, qt.IsNil)
+	zkeyPath, err := testutils.GetArtifactPath(testutils.BallotCipherZkey)
+	c.Assert(err, qt.IsNil)
+	vkeyPath, err := testutils.GetArtifactPath(testutils.BallotCipherVkey)
+	c.Assert(err, qt.IsNil)
 
 	// encrypt ballot
-	_, pubKey := utils.GenerateKeyPair()
-	k, err := utils.RandomK()
-	if err != nil {
-		t.Errorf("Error generating random k: %v\n", err)
-		return
-	}
+	_, pubKey := testutils.GenerateKeyPair()
+	pubX, pubY := testutils.AffineCoords(pubKey)
+	k, err := testutils.RandomK()
+	c.Assert(err, qt.IsNil, qt.Commentf("Error generating random k"))
+
+	// Circuit derives k_i = Poseidon(k_{i-1}) per field; we only have one field.
+	domain := testutils.ToFr(0)
+	ks, err := testutils.DerivePoseidonChain(domain, k, 1)
+	c.Assert(err, qt.IsNil, qt.Commentf("derive ks"))
+
 	msg := big.NewInt(3)
-	c1, c2 := utils.Encrypt(msg, pubKey, k)
+	c1, c2 := testutils.Encrypt(msg, pubKey, ks[1])
 	inputs := map[string]any{
-		"encryption_pubkey": []string{pubKey.X.String(), pubKey.Y.String()},
+		"encryption_pubkey": []string{pubX.String(), pubY.String()},
 		"k":                 k.String(),
 		"msg":               msg.String(),
 		"c1":                []string{c1[0].String(), c1[1].String()},
 		"c2":                []string{c2[0].String(), c2[1].String()},
 	}
 	bInputs, _ := json.MarshalIndent(inputs, "  ", "  ")
-	t.Log("Inputs:", string(bInputs))
-	proofData, pubSignals, err := utils.CompileAndGenerateProof(bInputs, wasmFile, zkeyFile)
-	if err != nil {
-		t.Errorf("Error compiling and generating proof: %v\n", err)
-		return
-	}
+	c.Log("Inputs:", string(bInputs))
+	proofData, pubSignals, err := testutils.CompileAndGenerateProof(bInputs, wasmPath, zkeyPath)
+	c.Assert(err, qt.IsNil, qt.Commentf("Error compiling and generating proof"))
+
 	// read vkey file
-	vkey, err := os.ReadFile(vkeyFile)
-	if err != nil {
-		t.Errorf("Error reading vkey file: %v\n", err)
-		return
-	}
-	if err := utils.VerifyProof(proofData, pubSignals, vkey); err != nil {
-		t.Errorf("Error verifying proof: %v\n", err)
-		return
-	}
-	log.Println("Proof verified")
+	vkey, err := os.ReadFile(vkeyPath)
+	c.Assert(err, qt.IsNil, qt.Commentf("Error reading vkey file"))
+
+	err = testutils.VerifyProof(proofData, pubSignals, vkey)
+	c.Assert(err, qt.IsNil, qt.Commentf("Error verifying proof"))
+	c.Log("Proof verified")
 }

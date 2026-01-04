@@ -1,4 +1,4 @@
-package utils
+package testutils
 
 import (
 	"fmt"
@@ -23,6 +23,13 @@ func getSnarkJSPath() (string, error) {
 			return path, nil
 		}
 	}
+	// If running from nested test folders, look two levels up.
+	path, err = filepath.Abs("../../deps/snarkjs/cli.js")
+	if err == nil {
+		if _, err := os.Stat(path); err == nil {
+			return path, nil
+		}
+	}
 	// Fallback to dev environment (../cli.js relative to davinci-circom-circuits root)
 	path, err = filepath.Abs("../cli.js")
 	if err == nil {
@@ -37,7 +44,7 @@ func getSnarkJSPath() (string, error) {
 			return path, nil
 		}
 	}
-	
+
 	return "", fmt.Errorf("snarkjs cli.js not found in deps/snarkjs/cli.js or ../cli.js")
 }
 
@@ -50,7 +57,7 @@ func CompileAndGenerateProof(inputs []byte, wasmFile, zkeyFile string) (string, 
 	defer os.RemoveAll(tempDir)
 
 	inputPath := filepath.Join(tempDir, "input.json")
-	if err := os.WriteFile(inputPath, inputs, 0644); err != nil {
+	if err := os.WriteFile(inputPath, inputs, 0o644); err != nil {
 		return "", "", err
 	}
 
@@ -58,24 +65,24 @@ func CompileAndGenerateProof(inputs []byte, wasmFile, zkeyFile string) (string, 
 	proofPath := filepath.Join(tempDir, "proof.json")
 	publicPath := filepath.Join(tempDir, "public.json")
 
-	// 1. Generate witness using snarkjs
+	// Generate witness using snarkjs
 	snarkjsPath, err := getSnarkJSPath()
 	if err != nil {
 		return "", "", err
 	}
-	
+
 	cmdWtns := exec.Command("node", snarkjsPath, "wtns", "calculate", wasmFile, inputPath, witnessPath)
 	if out, err := cmdWtns.CombinedOutput(); err != nil {
 		return "", "", fmt.Errorf("snarkjs wtns calculate failed: %v\nOutput: %s", err, out)
 	}
 
-	// 2. Generate proof
+	// Generate proof
 	cmdProve := exec.Command("node", snarkjsPath, "groth16", "prove", zkeyFile, witnessPath, proofPath, publicPath)
 	if out, err := cmdProve.CombinedOutput(); err != nil {
 		return "", "", fmt.Errorf("snarkjs groth16 prove failed: %v\nOutput: %s", err, out)
 	}
 
-	// 3. Read results
+	// Read results
 	proofBytes, err := os.ReadFile(proofPath)
 	if err != nil {
 		return "", "", err
@@ -99,13 +106,13 @@ func VerifyProof(proofData, pubSignals string, vkey []byte) error {
 	publicPath := filepath.Join(tempDir, "public.json")
 	vkeyPath := filepath.Join(tempDir, "vkey.json")
 
-	if err := os.WriteFile(proofPath, []byte(proofData), 0644); err != nil {
+	if err := os.WriteFile(proofPath, []byte(proofData), 0o644); err != nil {
 		return err
 	}
-	if err := os.WriteFile(publicPath, []byte(pubSignals), 0644); err != nil {
+	if err := os.WriteFile(publicPath, []byte(pubSignals), 0o644); err != nil {
 		return err
 	}
-	if err := os.WriteFile(vkeyPath, vkey, 0644); err != nil {
+	if err := os.WriteFile(vkeyPath, vkey, 0o644); err != nil {
 		return err
 	}
 

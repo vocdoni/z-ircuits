@@ -2,19 +2,12 @@ package test
 
 import (
 	"encoding/json"
-	"log"
 	"os"
 	"strconv"
 	"testing"
 
 	qt "github.com/frankban/quicktest"
-	"github.com/vocdoni/z-ircuits/utils"
-)
-
-const (
-	wasmFile = "../artifacts/ballot_checker_test.wasm"
-	zkeyFile = "../artifacts/ballot_checker_test_pkey.zkey"
-	vkeyFile = "../artifacts/ballot_checker_test_vkey.json"
+	"github.com/vocdoni/davinci-circom-circuits/test/testutils"
 )
 
 // padToEight returns a slice of length 8, copying the caller‑supplied values
@@ -36,6 +29,7 @@ func ballotToStrings(vals []int64) []string {
 }
 
 func TestBallotChecker(t *testing.T) {
+	c := qt.New(t)
 	type tc struct {
 		name         string
 		fields       []int64 // raw field values (<= 8 non‑zero entries)
@@ -220,6 +214,14 @@ func TestBallotChecker(t *testing.T) {
 		},
 	}
 
+	// Get artifact paths
+	wasmPath, err := testutils.GetArtifactPath(testutils.BallotCheckerWasm)
+	c.Assert(err, qt.IsNil)
+	zkeyPath, err := testutils.GetArtifactPath(testutils.BallotCheckerZkey)
+	c.Assert(err, qt.IsNil)
+	vkeyPath, err := testutils.GetArtifactPath(testutils.BallotCheckerVkey)
+	c.Assert(err, qt.IsNil)
+
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			c := qt.New(t)
@@ -249,25 +251,25 @@ func TestBallotChecker(t *testing.T) {
 			bInputs, err := json.MarshalIndent(inputs, "  ", "  ")
 			c.Assert(err, qt.IsNil)
 
-			log.Printf("\n[%s] Inputs:\n%s\n", tc.name, string(bInputs))
+			c.Logf("\n[%s] Inputs:\n%s\n", tc.name, string(bInputs))
 
-			proofData, pubSignals, err := utils.CompileAndGenerateProof(bInputs, wasmFile, zkeyFile)
+			proofData, pubSignals, err := testutils.CompileAndGenerateProof(bInputs, wasmPath, zkeyPath)
 
 			if tc.expectPass {
 				// Expect success in both proof generation and verification.
 				c.Assert(err, qt.IsNil)
 
-				vkey, err := os.ReadFile(vkeyFile)
+				vkey, err := os.ReadFile(vkeyPath)
 				c.Assert(err, qt.IsNil)
 
-				err = utils.VerifyProof(proofData, pubSignals, vkey)
+				err = testutils.VerifyProof(proofData, pubSignals, vkey)
 				c.Assert(err, qt.IsNil)
 			} else {
 				// Failure is acceptable at either stage for negative tests.
 				if err == nil {
-					vkey, err2 := os.ReadFile(vkeyFile)
+					vkey, err2 := os.ReadFile(vkeyPath)
 					c.Assert(err2, qt.IsNil)
-					err = utils.VerifyProof(proofData, pubSignals, vkey)
+					err = testutils.VerifyProof(proofData, pubSignals, vkey)
 				}
 				c.Assert(err, qt.Not(qt.IsNil))
 			}

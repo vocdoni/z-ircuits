@@ -27,9 +27,9 @@ for idx in $(seq 1 "$n_proofs"); do
     echo "Generating $((idx)) of $((n_proofs))..."
     # Construct the command with or without the -path flag
     if [ -n "$abs_path" ]; then
-        go test -timeout 30s -run ^TestBallotProofPoseidon$ github.com/vocdoni/z-ircuits/test -v -count=1 -args -testID=$idx -persist -path="$abs_path" >/dev/null 2>&1
+        go test -timeout 30s -run ^TestBallotProofPoseidon$ github.com/vocdoni/davinci-circom-circuits/test -v -count=1 -args -testID=$idx -persist -path="$abs_path" >/dev/null 2>&1
     else
-        go test -timeout 30s -run ^TestBallotProofPoseidon$ github.com/vocdoni/z-ircuits/test -v -count=1 -args -testID=$idx -persist >/dev/null 2>&1
+        go test -timeout 30s -run ^TestBallotProofPoseidon$ github.com/vocdoni/davinci-circom-circuits/test -v -count=1 -args -testID=$idx -persist >/dev/null 2>&1
     fi
 done
 

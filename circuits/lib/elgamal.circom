@@ -25,22 +25,18 @@ template ElGamal() {
     ise.in[0] <== encryption_pubkey[1];
     ise.in[1] <== 1;
     isz.out + ise.out === 0;
-    // BLS12-377 Twisted Edwards base point (from Gnark)
-    var base[2] = [
-        717051916204163000937139483451426116831771857428389560441264442629694842243,
-        882565546457454111605105352482086902132191855952243170543452705048019814192
-    ];
-    // encode the message as a point on the curve
+
+    // encode the message as a point on the curve (fixed generator table)
     var msg_bits = 32;
     component messageBits = Num2Bits(msg_bits);
     messageBits.in <== msg;
-    component messagePoint = EscalarMulFix(msg_bits, base);
+    component messagePoint = EscalarMulFix(msg_bits);
     for (var i=0; i<msg_bits; i++) {
         messageBits.out[i] ==> messagePoint.e[i];
     }
     var k_bits = 253;
     // c1 = k * base (escalarMulFix)
-    component c1Point = EscalarMulFix(k_bits, base);
+    component c1Point = EscalarMulFix(k_bits);
     component kBits = Num2Bits(k_bits);
     kBits.in <== k;
     for (var i=0; i<k_bits; i++) {

@@ -1,10 +1,32 @@
 #!/bin/bash
 
-# check if the circuit is provided and exists
-CIRCUIT="$1"
-if [ -z "$CIRCUIT" ]; then
-    echo "Please provide the path to the circom circuit file"
-    exit 1
+# Create deps directory
+DEPS_DIR="$PWD/deps"
+if [ ! -d "$DEPS_DIR" ]; then
+    mkdir "$DEPS_DIR"
+fi
+
+CIRCOM_BIN="circom"
+
+if ! command -v $CIRCOM_BIN &> /dev/null; then
+    if [ -f "$DEPS_DIR/circom" ]; then
+        CIRCOM_BIN="$DEPS_DIR/circom"
+    else
+        echo "Circom not found, installing to $DEPS_DIR..."
+        wget -q https://github.com/iden3/circom/releases/download/v2.2.3/circom-linux-amd64 -O "$DEPS_DIR/circom"
+        if [ $? -ne 0 ]; then
+            echo "Failed to download circom"
+            exit 1
+        fi
+        chmod +x "$DEPS_DIR/circom"
+        CIRCOM_BIN="$DEPS_DIR/circom"
+    fi
+fi
+
+$CIRCOM_BIN --version > /dev/null
+if [ $? -ne 0 ]; then
+   echo "Circom check failed"
+   exit 1
 fi
 
 # if artifacts directory is not provided, use the default one
@@ -15,44 +37,22 @@ if [ ! -d "$ARTIFACTS_DIR" ]; then
     mkdir "$ARTIFACTS_DIR"
 fi
 
-# Create deps directory
-DEPS_DIR="$PWD/deps"
-if [ ! -d "$DEPS_DIR" ]; then
-    mkdir "$DEPS_DIR"
-fi
-
 # check if npm is installed
 if [ ! command -v npm &> /dev/null ]; then
     echo "npm is not installed"
     exit 1
 fi
 
-# check if cargo is installed
-if [ ! command -v cargo &> /dev/null ]; then
-    echo "rust is not installed"
-    exit 1
-fi
-
-echo '{"name": "davinci-circom-circuits"}' > ./package.json
-
-# Check/Install Circom
-CIRCOM_BIN="$DEPS_DIR/circom/target/release/circom"
-if [ ! -f "$CIRCOM_BIN" ]; then
-    echo "circom not found, installing in $DEPS_DIR..."
-    if [ ! -d "$DEPS_DIR/circom" ]; then
-        git clone https://github.com/iden3/circom.git "$DEPS_DIR/circom"
-    fi
-    cd "$DEPS_DIR/circom"
-    cargo build --release
-    cd -
-fi
-
 # Check/Install SnarkJS (Custom fork with BLS12-377)
 SNARKJS_DIR="$DEPS_DIR/snarkjs"
 SNARKJS="node $SNARKJS_DIR/cli.js"
 
-if [ ! -d "$SNARKJS_DIR" ]; then
-    echo "snarkjs (p4u fork) not found, cloning..."
+if [ ! -d "$SNARKJS_DIR" ] || [ -z "$(ls -A "$SNARKJS_DIR" 2>/dev/null)" ]; then
+    echo "snarkjs not found, cloning..."
+    # Clean stale empty dir
+    if [ -d "$SNARKJS_DIR" ] && [ -z "$(ls -A "$SNARKJS_DIR" 2>/dev/null)" ]; then
+        rmdir "$SNARKJS_DIR"
+    fi
     git clone https://github.com/p4u/snarkjs.git "$SNARKJS_DIR"
     cd "$SNARKJS_DIR"
     git submodule update --init --recursive
@@ -60,25 +60,25 @@ if [ ! -d "$SNARKJS_DIR" ]; then
     cd -
 fi
 
-# install circomlib in local package
+# install circomlib
+echo "=> Install circomlib"
 npm install circomlib
 
-[ "$CIRCUIT" == "all" ] && {
-  CIRCUIT=$(find test -name "*.circom")
-}
+# set circuit to the first argument or default to ballot_proof
+CIRCUIT="${1:-circuits/ballot_proof.circom}"
 
 for C in $CIRCUIT; do
   # compile the circuit
   echo "=> Compiling circuit $C"
   $CIRCOM_BIN $C --r1cs --wasm --sym --prime bls12377 -o $ARTIFACTS_DIR \
     -l ./circuits/lib/bls12377 \
+    -l ./circuits \
     -l ./node_modules/circomlib/circuits \
-    -l "$DEPS_DIR/circom-ecdsa/circuits"
   
   # check if ptau file exists, if not generate it for bls12377
   if [ ! -f "$ARTIFACTS_DIR/ptau" ]; then
       echo "Generating ptau file for bls12377..."
-      $SNARKJS powersoftau new bls12377 17 $ARTIFACTS_DIR/ptau_0.ptau -v
+      $SNARKJS powersoftau new bls12377 18 $ARTIFACTS_DIR/ptau_0.ptau -v
       $SNARKJS powersoftau contribute $ARTIFACTS_DIR/ptau_0.ptau $ARTIFACTS_DIR/ptau_1.ptau --name="First contribution" -v -e="some random text"
       $SNARKJS powersoftau prepare phase2 $ARTIFACTS_DIR/ptau_1.ptau $ARTIFACTS_DIR/ptau.ptau -v
       mv $ARTIFACTS_DIR/ptau.ptau $ARTIFACTS_DIR/ptau
@@ -94,7 +94,7 @@ for C in $CIRCUIT; do
   
   # mv wasm from $ARTIFACTS/$NAME_js/$NAME.wasm to $ARTIFACTS/$NAME.wasm
   if [ -f "$ARTIFACTS_DIR/$NAME\_js/$NAME.wasm" ]; then
-    mv $ARTIFACTS_DIR/$NAME\_js/$NAME.wasm $ARTIFACTS_DIR/$NAME.wasm
+    cp $ARTIFACTS_DIR/$NAME\_js/$NAME.wasm $ARTIFACTS_DIR/$NAME.wasm
   fi
 done
   

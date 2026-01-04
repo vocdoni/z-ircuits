@@ -75,15 +75,15 @@ The circuits execution (proof generation and verification) is done using `golang
 
 * **Ballot checker**
     ```sh 
-    go test -timeout 60s -run ^TestBallotChecker$ github.com/vocdoni/z-ircuits/test -v -count=1
+    go test -timeout 60s -run ^TestBallotChecker$ github.com/vocdoni/davinci-circom-circuits/test -v -count=1
     ```
 
 * **Ballot cipher**
     ```sh 
-    go test -timeout 60s -run ^TestBallotCipher$ github.com/vocdoni/z-ircuits/test -v -count=1
+    go test -timeout 60s -run ^TestBallotCipher$ github.com/vocdoni/davinci-circom-circuits/test -v -count=1
     ```
 
 * **Ballot proof**
     ```sh 
-    go test -timeout 60s -run ^TestBallotProof$ github.com/vocdoni/z-ircuits/test -v -count=1
+    go test -timeout 60s -run ^TestBallotProof$ github.com/vocdoni/davinci-circom-circuits/test -v -count=1
     ```
