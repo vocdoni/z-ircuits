@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/iden3/go-iden3-crypto/mimc7"
-	"github.com/vocdoni/z-ircuits/utils"
+	"github.com/vocdoni/davinci-circom-circuits/utils"
 	"go.vocdoni.io/dvote/crypto/ethereum"
 	"go.vocdoni.io/dvote/util"
 )

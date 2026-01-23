@@ -9,7 +9,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/vocdoni/z-ircuits/utils"
+	"github.com/vocdoni/davinci-circom-circuits/utils"
 	"go.vocdoni.io/dvote/crypto/ethereum"
 	"go.vocdoni.io/dvote/util"
 )

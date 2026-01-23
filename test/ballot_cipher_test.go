@@ -7,7 +7,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/vocdoni/z-ircuits/utils"
+	"github.com/vocdoni/davinci-circom-circuits/utils"
 )
 
 func TestBallotCipher(t *testing.T) {

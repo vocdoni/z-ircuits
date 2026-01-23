@@ -1,4 +1,4 @@
-# VocdoniZ Circom circuits
+# DAVINCI Circom circuits
 
 This repository includes the templates that compose the zk-snark circuit that allows to prove a valid vote, including the format of the vote itself and its encryption:
  * **Ballot checker** ([`ballot_checker.circom`](./circuits/ballot_checker.circom)): Checks that the ballot is valid under the params provided as inputs.
@@ -110,27 +110,27 @@ The circuits execution (proof generation and verification) can be done using `go
 
 * **Ballot checker**
     ```sh 
-    go test -timeout 30s -run ^TestBallotChecker$ github.com/vocdoni/z-ircuits/test -v -count=1
+    go test -timeout 30s -run ^TestBallotChecker$ github.com/vocdoni/davinci-circom-circuits/test -v -count=1
     ```
 
 * **Ballot cipher**
     ```sh 
-    go test -timeout 30s -run ^TestBallotCipher$ github.com/vocdoni/z-ircuits/test -v -count=1
+    go test -timeout 30s -run ^TestBallotCipher$ github.com/vocdoni/davinci-circom-circuits/test -v -count=1
     ```
 
 * **Ballot proof**
     ```sh 
-    go test -timeout 30s -run ^TestBallotProof$ github.com/vocdoni/z-ircuits/test -v -count=1
+    go test -timeout 30s -run ^TestBallotProof$ github.com/vocdoni/davinci-circom-circuits/test -v -count=1
     ```
 
 * **Ballot proof hashed inputs (MiMC7)**
     ```sh 
-    go test -timeout 30s -run ^TestBallotProofMiMC$ github.com/vocdoni/z-ircuits/test -v -count=1
+    go test -timeout 30s -run ^TestBallotProofMiMC$ github.com/vocdoni/davinci-circom-circuits/test -v -count=1
     ```
 
 * **Ballot proof hashed inputs (Poseidon)**
     ```sh 
-    go test -timeout 30s -run ^TestBallotProofPoseidon$ github.com/vocdoni/z-ircuits/test -v -count=1
+    go test -timeout 30s -run ^TestBallotProofPoseidon$ github.com/vocdoni/davinci-circom-circuits/test -v -count=1
     ```
 
 ### Typescript

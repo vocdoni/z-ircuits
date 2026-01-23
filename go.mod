@@ -1,4 +1,4 @@
-module github.com/vocdoni/z-ircuits
+module github.com/vocdoni/davinci-circom-circuits
 
 go 1.23.0
 

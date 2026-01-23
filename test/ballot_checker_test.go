@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	qt "github.com/frankban/quicktest"
-	"github.com/vocdoni/z-ircuits/utils"
+	"github.com/vocdoni/davinci-circom-circuits/utils"
 )
 
 const (
