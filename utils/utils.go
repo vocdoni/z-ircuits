@@ -6,14 +6,21 @@ import (
 	"math/big"
 
 	"github.com/iden3/go-iden3-crypto/babyjub"
-	"github.com/iden3/go-iden3-crypto/mimc7"
 	"github.com/iden3/go-iden3-crypto/poseidon"
 	"go.vocdoni.io/dvote/util"
 )
 
+// State Namespaces
+
+const (
+	ConfigMax uint64 = 0x0000000000000010
+	BallotMin uint64 = 0x0000000000000011 // = ConfigMax + 1
+	VoteIDMin uint64 = 0x8000000000000000 // = 1<<63 = 0b1000...000 (64 bits)
+)
+
 func BigIntArrayToN(arr []*big.Int, n int) []*big.Int {
 	bigArr := make([]*big.Int, n)
-	for i := 0; i < n; i++ {
+	for i := range n {
 		if i < len(arr) {
 			bigArr[i] = arr[i]
 		} else {
@@ -81,19 +88,18 @@ func MultiPoseidon(inputs ...*big.Int) (*big.Int, error) {
 }
 
 func VoteID(bigPID, bigAddr, k *big.Int) (*big.Int, error) {
-	hash, err := mimc7.Hash([]*big.Int{
+	hash, err := poseidon.Hash([]*big.Int{
 		util.BigToFF(bigPID),
 		util.BigToFF(bigAddr),
 		util.BigToFF(k),
-	}, nil)
+	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate vote ID: %v", err)
 	}
-	return TruncateTo160Bits(hash), nil
+	return MapHashToVoteID(hash), nil
 }
 
-func TruncateTo160Bits(input *big.Int) *big.Int {
-	mask := new(big.Int).Lsh(big.NewInt(1), 160) // 1 << 160
-	mask.Sub(mask, big.NewInt(1))                // (1 << 160) - 1
-	return new(big.Int).And(input, mask)         // input & ((1<<160)-1)
+func MapHashToVoteID(hash *big.Int) *big.Int {
+	voteIDMin := new(big.Int).SetUint64(VoteIDMin)
+	return new(big.Int).Add(voteIDMin, new(big.Int).Mod(hash, voteIDMin))
 }
