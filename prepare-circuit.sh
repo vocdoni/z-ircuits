@@ -1,28 +1,26 @@
 #!/bin/bash
+set -euo pipefail
 
 # check if the circuit is provided and exists
-CIRCUIT="$1"
-if [ -z "$CIRCUIT" ]; then
-    echo "Please provide the path to the circom circuit file"
-    exit 1
-fi
+CIRCUIT="${1:-all}"
+[ "$CIRCUIT" = "all" ] && {
+  CIRCUIT=$(find test -name "*.circom")
+}
 
 # if artifacts directory is not provided, use the default one
-if [ -z "$2" ]; then
-    ARTIFACTS_DIR="$PWD/artifacts"
-fi
+ARTIFACTS_DIR="${2:-$PWD/artifacts}"
 if [ ! -d "$ARTIFACTS_DIR" ]; then
     mkdir "$ARTIFACTS_DIR"
 fi
 
 # check if npm is installed
-if [ ! command -v npm &> /dev/null ]; then
+if ! command -v npm >/dev/null 2>&1; then
     echo "npm is not installed"
     exit 1
 fi
 
 # check if cargo is installed
-if [ ! command -v cargo &> /dev/null ]; then
+if ! command -v cargo >/dev/null 2>&1; then
     echo "rust is not installed"
     exit 1
 fi
@@ -30,27 +28,23 @@ fi
 echo '{"name": "davinci-circom-circuits"}' > ./package.json
 
 # check if circom is installed
-if [ ! command -v circom --version &> /dev/null ]; then
+if ! command -v circom >/dev/null 2>&1; then
     echo "circom is not installed, installing..."
     git clone https://github.com/iden3/circom.git
-    cd circom
+   ( cd circom
     cargo build --release
     cargo install --path circom
-    circom --version
+    circom --version )
 fi
 
 # check if snarkjs is installed
-if [ ! command -v snarkjs &> /dev/null ]; then
+if ! command -v snarkjs >/dev/null 2>&1; then
     echo "snarkjs is not installed, installing..."
     npm install -g snarkjs
 fi
 
 # install circomlib
 npm install circomlib
-
-[ "$CIRCUIT" == "all" ] && {
-  CIRCUIT=$(find test -name "*.circom")
-}
 
 for C in $CIRCUIT; do
   # compile the circuit

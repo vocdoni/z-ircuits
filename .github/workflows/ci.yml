@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && format('ci-pr-{0}', github.event.pull_request.number) || format('ci-push-{0}-{1}', github.ref, github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install system deps for circom
+        run: sudo apt-get update && sudo apt-get install -y build-essential pkg-config libgmp-dev
+      - name: Compile circuits
+        run: ./prepare-circuit.sh all
+      - uses: benjlevesque/short-sha@v3.0 # sets env.SHA to the first 7 chars of github.sha
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: davinci-circom-circuits-artifacts@${{ env.SHA }}
+          path: |
+            artifacts/*
+            !artifacts/ptau
+      - name: Go tests
+        run: go test ./...
+      - name: TypeScript tests
+        working-directory: test/ts
+        run: |
+          npm ci
+          npm run build
+          npm run ballot_checker
+          npm run ballot_cipher
+          npm run ballot_proof
+          npm run ballot_proof_poseidon
